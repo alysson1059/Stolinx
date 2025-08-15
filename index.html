@@ -6,10 +6,8 @@
     <title>Stolinx - Gerenciador de Estoque</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
-    <!-- Adicionando a biblioteca de gráficos Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* --- ESTILOS DO SEU MODELO (COM ADIÇÕES PARA O MODAL) --- */
         :root {
             --color-primary: #7380ec;
             --color-danger: #ff7782;
@@ -33,6 +31,16 @@
             --padding-1: 1.2rem;
 
             --box-shadow: 0 2rem 3rem var(--color-light);
+        }
+
+        .dark-theme {
+            --color-background: #181a1e;
+            --color-white: #202528;
+            --color-dark: #edeffd;
+            --color-dark-variant: #a3a6ad;
+            --color-light: rgba(0, 0, 0, 0.4);
+            --box-shadow: 0 2rem 3rem var(--color-light);
+            --color-info-light: #484d52;
         }
 
         * {
@@ -59,6 +67,7 @@
             user-select: none;
             overflow-x: hidden;
             color: var(--color-dark);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .container {
@@ -86,9 +95,10 @@
             font-size: 0.87rem;
         }
 
-        /* --- Sidebar --- */
         aside {
             height: 100vh;
+            background: var(--color-white);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         aside .top {
@@ -109,6 +119,10 @@
         
         aside .logo h2 .danger {
             color: var(--color-danger);
+        }
+        
+        aside .close {
+            display: none;
         }
 
         aside .sidebar {
@@ -132,6 +146,7 @@
             position: relative;
             height: 3.7rem;
             transition: all 300ms ease;
+            cursor: pointer;
         }
 
         aside .sidebar a span {
@@ -169,10 +184,22 @@
         aside .sidebar a:hover span {
             margin-left: 1rem;
         }
+
+        /* [NOVO] O botão de tema não deve ter o efeito de "ativação" visual */
+        #theme-toggler-link.active {
+            background: none;
+        }
         
-        /* --- Main Content --- */
         main {
             margin-top: 1.4rem;
+        }
+
+        #menu-btn {
+            display: none;
+            background: none;
+            color: var(--color-dark);
+            font-size: 1.8rem;
+            cursor: pointer;
         }
         
         .main-content {
@@ -203,7 +230,7 @@
             border-radius: var(--card-border-radius);
             margin-top: 1rem;
             box-shadow: var(--box-shadow);
-            transition: all 300ms ease;
+            transition: all 300ms ease, background-color 0.3s ease;
         }
 
         main .insights > div:hover {
@@ -214,7 +241,7 @@
             background: var(--color-primary);
             padding: 0.5rem;
             border-radius: 50%;
-            color: var(--color-white);
+            color: #fff;
             font-size: 2rem;
         }
 
@@ -238,13 +265,12 @@
             color: var(--color-info-dark);
         }
         
-        /* --- Gráficos e Tabelas --- */
         .card {
             background: var(--color-white);
             padding: var(--card-padding);
             border-radius: var(--card-border-radius);
             box-shadow: var(--box-shadow);
-            transition: all 300ms ease;
+            transition: all 300ms ease, background-color 0.3s ease, color 0.3s ease;
             margin-top: 1.5rem;
         }
 
@@ -264,7 +290,8 @@
         th, td {
             padding: 15px;
             text-align: left;
-            border-bottom: 1px solid var(--color-light);
+            border-bottom: 1px solid var(--color-info-light);
+            transition: border-color 0.3s ease;
         }
         
         tbody tr:last-child td {
@@ -276,6 +303,26 @@
             font-weight: bold;
         }
         
+        .vencimento-proximo {
+            background-color: #fffbe6 !important;
+        }
+        .dark-theme .vencimento-proximo {
+            background-color: #332c21 !important;
+        }
+        .vencimento-proximo td {
+            color: #8a6d3b !important;
+        }
+        .dark-theme .vencimento-proximo td {
+            color: #e4c489 !important;
+        }
+        .vencimento-aviso-icon {
+            color: var(--color-warning);
+            font-size: 1.2rem;
+            vertical-align: middle;
+            margin-left: 8px;
+            cursor: help;
+        }
+
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -287,14 +334,12 @@
             margin-top: 0;
         }
 
-        /* [NOVO] Estilo para controlar o tamanho do gráfico */
         .chart-container {
             position: relative;
-            height: 300px; /* Altura máxima do gráfico */
+            height: 300px;
             width: 100%;
         }
 
-        /* --- Formulários --- */
         .form-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -315,17 +360,18 @@
             width: 100%;
             padding: 10px;
             border-radius: var(--border-radius-1);
-            background: var(--color-light);
+            background: var(--color-info-light);
             font-family: 'Poppins', sans-serif;
             color: var(--color-dark);
             font-size: 0.88rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
         button {
             padding: 10px 20px;
             border-radius: var(--border-radius-1);
             background: var(--color-primary);
-            color: var(--color-white);
+            color: #fff;
             cursor: pointer;
             transition: all 300ms ease;
             font-family: 'Poppins', sans-serif;
@@ -354,10 +400,16 @@
 
         .search-bar {
             width: 100%;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.5rem;
         }
 
-        /* ESTILOS PARA O MODAL DE CATEGORIAS */
+        .search-instruction {
+            font-size: 0.75rem;
+            color: var(--color-info-dark);
+            margin-bottom: 1.5rem;
+            display: block;
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -365,7 +417,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.6);
-            display: none; /* Escondido por padrão */
+            display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
@@ -378,15 +430,17 @@
             width: 90%;
             max-width: 500px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--color-light);
+            border-bottom: 1px solid var(--color-info-light);
             padding-bottom: 1rem;
             margin-bottom: 1.5rem;
+            transition: border-color 0.3s ease;
         }
 
         .modal-header h2 {
@@ -407,17 +461,114 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 5px;
-            border-bottom: 1px solid var(--color-light);
+            border-bottom: 1px solid var(--color-info-light);
+            transition: border-color 0.3s ease, color 0.3s ease;
+        }
+
+        @media screen and (max-width: 1200px) {
+            .container {
+                width: 94%;
+                grid-template-columns: 7rem auto;
+            }
+
+            aside .logo h2 {
+                display: none;
+            }
+
+            aside .sidebar h3 {
+                display: none;
+            }
+
+            aside .sidebar a {
+                width: 5.6rem;
+            }
+             aside .sidebar a:last-child {
+                position: relative;
+                margin-top: 1.8rem;
+            }
+
+            main .insights {
+                grid-template-columns: 1fr;
+            }
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                width: 100%;
+                grid-template-columns: 1fr;
+                padding: 0 1rem;
+            }
+
+            aside {
+                position: fixed;
+                left: -100%;
+                background: var(--color-white);
+                width: 18rem;
+                z-index: 3;
+                box-shadow: 1rem 3rem 4rem var(--color-light);
+                height: 100vh;
+                padding-right: var(--card-padding);
+                display: block;
+                transition: left 400ms ease, background-color 0.3s ease;
+            }
+
+            aside.show-sidebar {
+                left: 0;
+            }
+
+            aside .logo {
+                margin-left: 1rem;
+            }
+
+             aside .logo h2 {
+                display: inline;
+            }
+
+            aside .sidebar h3 {
+                display: inline;
+            }
+            
+            aside .sidebar a {
+                width: 100%;
+                height: 3.4rem;
+            }
+
+            aside .sidebar a:last-child {
+                position: absolute;
+                bottom: 5rem;
+            }
+
+            aside .close {
+                display: inline-block;
+                cursor: pointer;
+            }
+
+            #menu-btn {
+                display: inline-block;
+            }
+            
+            main {
+                margin-top: 0;
+                padding: 0 1rem;
+            }
+            .form-container {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- ========== SIDEBAR ========== -->
         <aside>
             <div class="top">
                 <div class="logo">
                     <h2>STOL<span class="danger">INX</span></h2>
+                </div>
+                <div class="close" id="close-btn">
+                    <span class="material-icons-sharp">close</span>
                 </div>
             </div>
 
@@ -434,6 +585,10 @@
                     <span class="material-icons-sharp">receipt_long</span>
                     <h3>Vendas</h3>
                 </a>
+                <a id="theme-toggler-link">
+                    <span class="material-icons-sharp">light_mode</span>
+                    <h3>Tema</h3>
+                </a>
                 <a href="#">
                     <span class="material-icons-sharp">logout</span>
                     <h3>Sair</h3>
@@ -441,9 +596,15 @@
             </div>
         </aside>
 
-        <!-- ========== MAIN CONTENT ========== -->
         <main>
-            <!-- ========== DASHBOARD ========== -->
+             <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <button id="menu-btn">
+                    <span class="material-icons-sharp">menu</span>
+                </button>
+                <div id="main-title-container">
+                </div>
+             </div>
+
             <div id="dashboard" class="main-content active">
                 <h1>Dashboard</h1>
                 <div class="date" id="current-date">Carregando data...</div>
@@ -462,10 +623,10 @@
                     <div class="expenses">
                         <span class="material-icons-sharp">bar_chart</span>
                         <div class="middle">
-                           <div>
+                            <div>
                                 <h3>Investimento (Custo Total)</h3>
                                 <h1 id="investimento-mes">R$ 0,00</h1>
-                           </div>
+                            </div>
                         </div>
                         <small class="text-muted">Soma do custo do estoque</small>
                     </div>
@@ -481,11 +642,9 @@
                     </div>
                 </div>
 
-                <!-- Novo container para o grid do dashboard -->
                 <div class="dashboard-grid" style="margin-top: 1.5rem;">
                     <div class="card">
                         <h2>Vendas por Produto (Unidades no Mês)</h2>
-                        <!-- [ALTERADO] Canvas envolvido por um container com altura fixa -->
                         <div class="chart-container">
                             <canvas id="salesChart"></canvas>
                         </div>
@@ -507,12 +666,12 @@
                 </div>
             </div>
 
-            <!-- ========== ESTOQUE ========== -->
             <div id="estoque" class="main-content">
                 <h1>Gerenciar Estoque</h1>
                 <div class="card">
                     <h2>Cadastrar Novo Item</h2>
                     <form class="form-container" id="form-cadastro-produto">
+                        <input type="hidden" id="editProductId">
                         <div class="input-group">
                             <label for="codigoProduto">Código do Produto</label>
                             <input type="text" id="codigoProduto" placeholder="Ex: SB001" required>
@@ -541,7 +700,6 @@
                             <label for="categoria">Categoria</label>
                             <div style="display: flex; gap: 10px;">
                                 <select id="categoria" style="flex-grow: 1;">
-                                    <!-- Categorias do Firebase virão aqui -->
                                 </select>
                                 <button type="button" id="open-category-modal" class="btn-warning" style="width: auto; padding: 0 15px;">
                                     <span class="material-icons-sharp">settings</span>
@@ -553,30 +711,31 @@
                         </div>
                     </form>
                 </div>
-                
+
                 <div class="card">
                     <h2>Itens em Estoque</h2>
-                    <input type="text" class="search-bar" id="searchEstoque" placeholder="Pesquisar por nome ou código...">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Código</th>
-                                <th>Produto</th>
-                                <th>Qtd.</th>
-                                <th>Custo</th>
-                                <th>Venda</th>
-                                <th>Lucro/Un.</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tabela-estoque-body">
-                            <!-- Os dados do Firebase serão inseridos aqui -->
-                        </tbody>
-                    </table>
+                    <input type="text" class="search-bar" id="searchEstoque" placeholder="Pesquisar...">
+                    <small class="search-instruction">Busque por nome, código, "vencendo" ou "repor".</small>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Código</th>
+                                    <th>Produto</th>
+                                    <th>Qtd.</th>
+                                    <th>Custo</th>
+                                    <th>Venda</th>
+                                    <th>Lucro/Un.</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-estoque-body">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-            
-            <!-- ========== VENDAS ========== -->
+
             <div id="vendas" class="main-content">
                 <h1>Registrar Venda / Orçamento</h1>
                 <div class="card">
@@ -586,7 +745,7 @@
                             <label for="nomeCliente">Nome do Cliente</label>
                             <input type="text" id="nomeCliente" placeholder="Opcional">
                         </div>
-                        
+
                         <div class="input-group">
                             <label for="selectProdutoVenda">Adicionar Produto</label>
                             <select id="selectProdutoVenda">
@@ -597,27 +756,28 @@
                             <label for="quantidadeVenda">Quantidade</label>
                             <input type="number" id="quantidadeVenda" value="1" min="1">
                         </div>
-                        
+
                         <div class="input-group" style="grid-column: 1 / -1;">
                              <button type="button" id="addItemOrcamento" style="width: auto; padding: 10px 30px;">Adicionar ao Orçamento</button>
                         </div>
                     </div>
-                    
+
                     <h2 style="margin-top: 2rem;">Orçamento Atual</h2>
-                     <table>
-                        <thead>
-                            <tr>
-                                <th>Produto</th>
-                                <th>Qtd.</th>
-                                <th>Preço Unit.</th>
-                                <th>Subtotal</th>
-                                <th>Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody id="orcamento-body">
-                            <!-- Itens do orçamento/venda aqui -->
-                        </tbody>
-                    </table>
+                     <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Qtd.</th>
+                                    <th>Preço Unit.</th>
+                                    <th>Subtotal</th>
+                                    <th>Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orcamento-body">
+                            </tbody>
+                        </table>
+                     </div>
 
                     <div style="text-align: right; margin-top: 1.5rem;">
                         <h3>Subtotal: <span id="subtotal-venda">R$ 0,00</span></h3>
@@ -638,7 +798,7 @@
                         </div>
                         <div class="input-group">
                             <label>Ações</label>
-                            <div style="display: flex; gap: 1rem;">
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                                <button type="button" id="share-whatsapp" style="background-color: #25D366; display:flex; align-items: center; justify-content: center; gap: 0.5rem;">
                                     <span class="material-icons-sharp">share</span> WhatsApp
                                 </button>
@@ -650,30 +810,29 @@
                     </div>
                 </div>
 
-                <!-- CARD HISTÓRICO DE VENDAS -->
                 <div class="card">
                     <h2>Histórico de Vendas</h2>
                     <input type="text" class="search-bar" id="pesquisa-venda-cliente" placeholder="Pesquisar por nome do cliente...">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Cliente</th>
-                                <th>Data</th>
-                                <th>Itens Vendidos</th>
-                                <th>Valor Total</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historico-vendas-body">
-                            <!-- Histórico de vendas do Firebase virá aqui -->
-                        </tbody>
-                    </table>
+                     <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Data</th>
+                                    <th>Itens Vendidos</th>
+                                    <th>Valor Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historico-vendas-body">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
             </div>
         </main>
     </div>
 
-    <!-- MODAL PARA GERENCIAR CATEGORIAS -->
     <div class="modal-overlay" id="category-modal">
         <div class="modal-container">
             <div class="modal-header">
@@ -692,21 +851,16 @@
                 </div>
                 <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Categorias Existentes</h3>
                 <ul id="lista-categorias">
-                    <!-- Lista de categorias do Firebase virá aqui -->
                 </ul>
             </div>
         </div>
     </div>
 
 
-    <!-- SCRIPTS DO FIREBASE -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
     <script>
-        // ==========================================================
-        //  CONFIGURAÇÃO DO FIREBASE (SEUS DADOS REAIS)
-        // ==========================================================
         const firebaseConfig = {
             apiKey: "AIzaSyAv54tgJ5oYrwTSNXpB2rCGjNbhJhe2CoM",
             authDomain: "stolinx-d6e26.firebaseapp.com",
@@ -716,16 +870,79 @@
             appId: "1:715535971682:web:66620d1590ae3e4ba6a83b"
         };
 
-        // Inicializar o Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+        
+        var costha = costha || {};
+        costha.studio = costha.studio || {};
+        costha.studio.softwares = costha.studio.softwares || {};
+        costha.studio.softwares.entregastyle = costha.studio.softwares.entregastyle || {};
 
-        // ==========================================================
-        //  LÓGICA DO APLICATIVO
-        // ==========================================================
+        costha.studio.softwares.entregastyle.estoque = {
+            filtrarItens: function() {
+                const filtro = document.getElementById('searchEstoque').value.toUpperCase();
+                const tabelaCorpo = document.getElementById("tabela-estoque-body");
+                const linhas = tabelaCorpo.getElementsByTagName("tr");
+
+                for (let i = 0; i < linhas.length; i++) {
+                    const linha = linhas[i];
+                    const celulas = linha.getElementsByTagName("td");
+                    let exibirLinha = false;
+
+                    if (celulas.length > 1) {
+                        const codigoProduto = celulas[0].textContent || celulas[0].innerText;
+                        const nomeProduto = celulas[1].textContent || celulas[1].innerText;
+                        
+                        if (codigoProduto.toUpperCase().indexOf(filtro) > -1 || nomeProduto.toUpperCase().indexOf(filtro) > -1) {
+                            exibirLinha = true;
+                        }
+
+                        if ("VENCENDO".indexOf(filtro) > -1 && linha.classList.contains('vencimento-proximo')) {
+                            exibirLinha = true;
+                        }
+
+                        const quantidadeTexto = celulas[2].textContent || celulas[2].innerText;
+                        if ("REPOR".indexOf(filtro) > -1 && quantidadeTexto.toUpperCase().includes('REPOR')) {
+                             exibirLinha = true;
+                        }
+                        
+                        if (exibirLinha) {
+                            linha.style.display = "";
+                        } else {
+                            linha.style.display = "none";
+                        }
+                    }
+                }
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             
-            // --- NAVEGAÇÃO ENTRE ABAS ---
+            const menuBtn = document.getElementById('menu-btn');
+            const closeBtn = document.getElementById('close-btn');
+            const aside = document.querySelector('aside');
+            const themeToggler = document.getElementById('theme-toggler-link');
+
+            menuBtn.addEventListener('click', () => {
+                aside.classList.add('show-sidebar');
+            });
+
+            closeBtn.addEventListener('click', () => {
+                aside.classList.remove('show-sidebar');
+            });
+
+            themeToggler.addEventListener('click', (e) => {
+                e.preventDefault();
+                const isDark = document.body.classList.toggle('dark-theme');
+                themeToggler.querySelector('span').textContent = isDark ? 'dark_mode' : 'light_mode';
+                localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
+            });
+
+            if (localStorage.getItem('darkMode') === 'enabled') {
+                document.body.classList.add('dark-theme');
+                themeToggler.querySelector('span').textContent = 'dark_mode';
+            }
+            
             const navLinks = document.querySelectorAll('.nav-link');
             const contentSections = document.querySelectorAll('.main-content');
             navLinks.forEach(link => {
@@ -742,7 +959,6 @@
                 });
             });
 
-            // --- FUNÇÕES DE FORMATAÇÃO E DATA ---
             function setCurrentDate() {
                 const today = new Date();
                 const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -764,7 +980,6 @@
                 input.addEventListener('input', () => formatCurrency(input));
             });
             
-            // --- LÓGICA DO MODAL DE CATEGORIAS ---
             const categoryModal = document.getElementById('category-modal');
             const openModalBtn = document.getElementById('open-category-modal');
             const closeModalBtn = document.getElementById('close-category-modal');
@@ -785,23 +1000,15 @@
             addCategoriaBtn.addEventListener('click', () => {
                 const nomeInput = document.getElementById('nova-categoria-nome');
                 const nomeCategoria = nomeInput.value.trim();
-
                 if (nomeCategoria === "") {
                     alert('Por favor, digite um nome para a categoria.');
                     return;
                 }
-
-                db.collection("categorias").add({
-                    nome: nomeCategoria
-                }).then(() => {
-                    nomeInput.value = "";
-                }).catch(error => {
-                    console.error("Erro ao adicionar categoria: ", error);
-                });
+                db.collection("categorias").add({ nome: nomeCategoria })
+                    .then(() => { nomeInput.value = ""; })
+                    .catch(error => { console.error("Erro ao adicionar categoria: ", error); });
             });
 
-
-            // --- FUNÇÕES DO FIREBASE (ESTOQUE) ---
             const formCadastro = document.getElementById('form-cadastro-produto');
             formCadastro.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -817,18 +1024,34 @@
                 };
                 produto.lucroUnidade = produto.valorVenda - produto.custo;
 
-                db.collection("produtos").add(produto)
-                .then(() => {
-                    alert("Produto cadastrado com sucesso!");
-                    formCadastro.reset();
-                })
-                .catch((error) => {
-                    console.error("Erro ao cadastrar: ", error);
-                    alert("Falha ao cadastrar produto.");
-                });
+                const editId = formCadastro.editProductId.value;
+
+                if (editId) {
+                    db.collection("produtos").doc(editId).update(produto)
+                        .then(() => {
+                            alert("Produto atualizado com sucesso!");
+                            formCadastro.reset();
+                            formCadastro.editProductId.value = '';
+                            formCadastro.querySelector('button[type="submit"]').textContent = 'Cadastrar Produto';
+                        })
+                        .catch((error) => {
+                            console.error("Erro ao atualizar: ", error);
+                            alert("Falha ao atualizar produto.");
+                        });
+                } 
+                else {
+                    db.collection("produtos").add(produto)
+                        .then(() => {
+                            alert("Produto cadastrado com sucesso!");
+                            formCadastro.reset();
+                        })
+                        .catch((error) => {
+                            console.error("Erro ao cadastrar: ", error);
+                            alert("Falha ao cadastrar produto.");
+                        });
+                }
             });
 
-            // --- FUNÇÕES DE CARREGAMENTO (PRODUTOS E CATEGORIAS) ---
             function carregarCategorias() {
                 const selectCategoria = document.getElementById('categoria');
                 const listaCategoriasUl = document.getElementById('lista-categorias');
@@ -836,13 +1059,11 @@
                 db.collection("categorias").orderBy("nome").onSnapshot(snapshot => {
                     selectCategoria.innerHTML = "";
                     listaCategoriasUl.innerHTML = "";
-
                     if (snapshot.empty) {
                         selectCategoria.innerHTML = '<option>Nenhuma categoria</option>';
                         listaCategoriasUl.innerHTML = '<li>Nenhuma categoria cadastrada.</li>';
                         return;
                     }
-
                     snapshot.forEach(doc => {
                         const categoria = doc.data();
                         const option = document.createElement('option');
@@ -872,6 +1093,30 @@
                 }
             }
 
+            window.editarProduto = (id) => {
+                const form = document.getElementById('form-cadastro-produto');
+                db.collection('produtos').doc(id).get().then(doc => {
+                    if (doc.exists) {
+                        const produto = doc.data();
+                        form.editProductId.value = id;
+                        form.codigoProduto.value = produto.codigo;
+                        form.nomeProduto.value = produto.nome;
+                        form.validade.value = produto.validade;
+                        form.quantidade.value = produto.quantidade;
+                        form.custoProduto.value = produto.custo.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                        form.valorVenda.value = produto.valorVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                        form.categoria.value = produto.categoria;
+                        
+                        form.querySelector('button[type="submit"]').textContent = 'Salvar Alterações';
+                        form.scrollIntoView({ behavior: 'smooth' });
+
+                    } else {
+                        alert("Produto não encontrado!");
+                    }
+                }).catch(error => {
+                    console.error("Erro ao buscar produto para edição:", error);
+                });
+            }
 
             function carregarProdutos() {
                 const tabelaCorpo = document.getElementById("tabela-estoque-body");
@@ -886,20 +1131,39 @@
                         return;
                     }
 
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0);
+
                     querySnapshot.forEach((doc) => {
                         const produto = doc.data();
                         const lucroUnidade = produto.lucroUnidade || (produto.valorVenda - produto.custo);
                         const tr = document.createElement('tr');
                         
+                        let avisoVencimento = '';
+                        let classeVencimento = '';
+
+                        if (produto.validade) {
+                            const [ano, mes, dia] = produto.validade.split('-').map(Number);
+                            const dataValidade = new Date(ano, mes - 1, dia);
+                            const diffTime = dataValidade.getTime() - hoje.getTime();
+                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                            if (diffDays >= 0 && diffDays <= 30) {
+                                classeVencimento = 'vencimento-proximo';
+                                avisoVencimento = `<span class="material-icons-sharp vencimento-aviso-icon" title="Vence em ${diffDays} dias!">warning</span>`;
+                            }
+                        }
+                        
+                        tr.className = classeVencimento;
+
                         tr.innerHTML = `
                             <td>${produto.codigo}</td>
-                            <td>${produto.nome}</td>
+                            <td>${produto.nome} ${avisoVencimento}</td>
                             <td class="${produto.quantidade < 3 ? 'low-stock-warning' : ''}">${produto.quantidade} ${produto.quantidade < 3 ? ' (Repor!)' : ''}</td>
                             <td>R$ ${produto.custo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                             <td>R$ ${produto.valorVenda.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                             <td>R$ ${lucroUnidade.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                             <td class="action-buttons">
-                                <button class="btn-warning"><span class="material-icons-sharp">edit</span></button>
+                                <button class="btn-warning" onclick="window.editarProduto('${doc.id}')"><span class="material-icons-sharp">edit</span></button>
                                 <button class="btn-danger" onclick="window.excluirProduto('${doc.id}', '${produto.nome}')"><span class="material-icons-sharp">delete</span></button>
                             </td>
                         `;
@@ -928,7 +1192,6 @@
                 }
             }
 
-            // --- LÓGICA DE VENDAS / ORÇAMENTO ---
             let orcamento = [];
             const btnRegistrarVenda = document.getElementById('registrar-venda-btn');
 
@@ -1038,7 +1301,6 @@
                 });
             });
 
-            // --- LÓGICA DO HISTÓRICO DE VENDAS ---
             const pesquisaVendaInput = document.getElementById('pesquisa-venda-cliente');
             let todasAsVendas = [];
 
@@ -1100,7 +1362,8 @@
                 }
             });
 
-            // --- LÓGICA DO DASHBOARD ---
+            document.getElementById('searchEstoque').addEventListener('keyup', costha.studio.softwares.entregastyle.estoque.filtrarItens);
+
             let salesChartInstance;
             function atualizarDashboard() {
                 const faturamentoEl = document.getElementById('faturamento-mes');
