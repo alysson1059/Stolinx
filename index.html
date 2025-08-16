@@ -644,6 +644,7 @@
                 padding: 0; /* Remove horizontal padding from container */
             }
             
+            /* THIS IS THE FIX: Reduce padding on cards for mobile */
             .card {
                 padding: var(--padding-1);
             }
@@ -955,7 +956,7 @@
                 <h1>Registrar Venda / Orçamento</h1>
                 <div class="card">
                     <h2>Itens e Cliente</h2>
-                    <div class="form-container" id="form-vendas">
+                    <div class="form-container">
                         <div class="input-group" style="grid-column: 1 / -1;">
                             <label for="nomeCliente">Nome do Cliente</label>
                             <input type="text" id="nomeCliente" placeholder="Opcional">
@@ -1409,8 +1410,6 @@
                             showAppNotification("Falha ao atualizar produto.");
                         });
                 } else {
-                    // Add creation timestamp for new products
-                    produto.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                     getUserCollection("produtos").add(produto)
                         .then(() => {
                             showAppNotification("Produto cadastrado com sucesso!", "Sucesso");
@@ -1550,7 +1549,6 @@
                             option.value = doc.id;
                             option.textContent = `${produto.nome} (Estoque: ${produto.quantidade}) - R$ ${produto.valorVenda.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                             option.dataset.price = produto.valorVenda;
-                            option.dataset.cost = produto.custo;
                             option.dataset.name = produto.nome;
                             selectVenda.appendChild(option);
                         }
@@ -1581,10 +1579,9 @@
                 const selectedOption = select.options[select.selectedIndex];
                 const produtoNome = selectedOption.dataset.name;
                 const produtoPreco = parseFloat(selectedOption.dataset.price);
-                const produtoCusto = parseFloat(selectedOption.dataset.cost);
                 const quantidade = parseInt(document.getElementById('quantidadeVenda').value);
 
-                orcamento.push({ id: produtoId, nome: produtoNome, qtd: quantidade, preco: produtoPreco, custo: produtoCusto });
+                orcamento.push({ id: produtoId, nome: produtoNome, qtd: quantidade, preco: produtoPreco });
                 atualizarTabelaOrcamento();
             });
             
@@ -1648,18 +1645,13 @@
                     return;
                 }
 
-                const totalVenda = parseFloat(document.getElementById('total-venda').textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.'));
-                const custoTotalVenda = orcamento.reduce((total, item) => total + (item.custo * item.qtd), 0);
-                const lucroVenda = totalVenda - custoTotalVenda;
-
                 const venda = {
                     cliente: document.getElementById('nomeCliente').value || 'Não informado',
                     data: firebase.firestore.FieldValue.serverTimestamp(),
                     itens: orcamento,
                     subtotal: parseFloat(document.getElementById('subtotal-venda').textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.')),
                     desconto: parseFloat(document.getElementById('descontoVenda').value.replace(/\./g, '').replace(',', '.')) || 0,
-                    total: totalVenda,
-                    lucro: lucroVenda
+                    total: parseFloat(document.getElementById('total-venda').textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.'))
                 };
 
                 const batch = db.batch();
@@ -1789,62 +1781,54 @@
                 const lucroEl = document.getElementById('lucro-mes');
                 const topSellersBody = document.getElementById('produtos-mais-saida-body');
 
-                // --- CALCULA INVESTIMENTO TOTAL E LUCRO POTENCIAL DO ESTOQUE ATUAL ---
                 getUserCollection('produtos').onSnapshot(snapshot => {
                     let investimentoTotal = 0;
-                    let lucroPotencialTotal = 0;
+                    let lucroPotencial = 0;
                     snapshot.forEach(doc => {
                         const p = doc.data();
-                        investimentoTotal += (p.custo || 0) * (p.quantidade || 0);
-                        lucroPotencialTotal += (p.valorVenda - p.custo) * (p.quantidade || 0);
+                        investimentoTotal += p.custo * p.quantidade;
+                        lucroPotencial += (p.valorVenda - p.custo) * p.quantidade;
                     });
                     investimentoEl.textContent = `R$ ${investimentoTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                    lucroEl.textContent = `R$ ${lucroPotencialTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                }, error => {
-                     console.error("Erro ao buscar produtos para o dashboard:", error);
-                     investimentoEl.textContent = 'Erro';
-                     lucroEl.textContent = 'Erro';
+                    lucroEl.textContent = `R$ ${lucroPotencial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                 });
 
-                // --- CALCULA FATURAMENTO E ITENS MAIS VENDIDOS DO MÊS ATUAL ---
-                const hoje = new Date();
-                const primeiroDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
-                const ultimoDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59);
+                getUserCollection('vendas').onSnapshot(snapshot => {
+                    let faturamentoMensal = 0;
+                    const hoje = new Date();
+                    const mesAtual = hoje.getMonth();
+                    const anoAtual = hoje.getFullYear();
+                    
+                    const topSellers = {};
 
-                getUserCollection('vendas')
-                    .where('data', '>=', primeiroDiaDoMes)
-                    .where('data', '<=', ultimoDiaDoMes)
-                    .onSnapshot(snapshot => {
-                        let faturamentoMensal = 0;
-                        const topSellers = {};
-
-                        snapshot.forEach(doc => {
-                            const v = doc.data();
-                            faturamentoMensal += v.total || 0;
-
-                            if (v.itens) {
+                    snapshot.forEach(doc => {
+                        const v = doc.data();
+                        if (v.data && v.data.toDate) {
+                            const dataVenda = v.data.toDate();
+                            if (dataVenda.getMonth() === mesAtual && dataVenda.getFullYear() === anoAtual) {
+                                faturamentoMensal += v.total;
                                 v.itens.forEach(item => {
                                     topSellers[item.nome] = (topSellers[item.nome] || 0) + item.qtd;
                                 });
                             }
-                        });
-
-                        faturamentoEl.textContent = `R$ ${faturamentoMensal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-
-                        const sortedTopSellers = Object.entries(topSellers).sort((a, b) => b[1] - a[1]);
-                        
-                        topSellersBody.innerHTML = '';
-                        if (sortedTopSellers.length === 0) {
-                            topSellersBody.innerHTML = '<tr><td colspan="2">Nenhuma venda este mês.</td></tr>';
-                        } else {
-                            sortedTopSellers.slice(0, 5).forEach(([nome, quantidade]) => {
-                                const tr = document.createElement('tr');
-                                tr.innerHTML = `<td>${nome}</td><td>${quantidade}</td>`;
-                                topSellersBody.appendChild(tr);
-                            });
                         }
-                        renderProductPieChart(sortedTopSellers);
                     });
+                    faturamentoEl.textContent = `R$ ${faturamentoMensal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+                    const sortedTopSellers = Object.entries(topSellers).sort((a, b) => b[1] - a[1]);
+                    
+                    topSellersBody.innerHTML = '';
+                    if (sortedTopSellers.length === 0) {
+                        topSellersBody.innerHTML = '<tr><td colspan="2">Nenhuma venda este mês.</td></tr>';
+                    } else {
+                        sortedTopSellers.slice(0, 5).forEach(([nome, quantidade]) => {
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `<td>${nome}</td><td>${quantidade}</td>`;
+                            topSellersBody.appendChild(tr);
+                        });
+                    }
+                    renderProductPieChart(sortedTopSellers);
+                });
             }
             
             function renderProductPieChart(topSellersData) {
@@ -1903,3 +1887,4 @@
     </script>
 </body>
 </html>
+
