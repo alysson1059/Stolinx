@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stolinx - Gerenciador de Estoque</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Maaterial+Icons+Sharp" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -837,7 +837,10 @@
 
             <div id="dashboard" class="main-content active">
                 <div class="dashboard-header">
-                    <h1 id="dashboard-title">Dashboard</h1>
+                    <div>
+                        <h1 id="dashboard-title">Dashboard</h1>
+                        <h2 id="welcome-message" class="text-muted" style="font-weight: 400; font-size: 1.2rem; margin-top: -0.5rem;"></h2>
+                    </div>
                     <div class="dashboard-filters">
                         <select id="filtro-mes"></select>
                         <select id="filtro-ano"></select>
@@ -1242,6 +1245,19 @@
                 currentUserId = user.uid;
                 authContainer.style.display = 'none';
                 mainContainer.classList.add('visible');
+
+                const welcomeMessageEl = document.getElementById('welcome-message');
+                if (welcomeMessageEl) {
+                    let userName = user.displayName; // From Google Sign-in
+                    if (!userName && user.email) {
+                        // For email/password, get the part before the @
+                        userName = user.email.split('@')[0];
+                    }
+                    // Capitalize the first letter
+                    userName = userName.charAt(0).toUpperCase() + userName.slice(1);
+                    welcomeMessageEl.textContent = `Olá, ${userName}`;
+                }
+
                 initializeAppLogic(); // Start the main application logic
             } else {
                 // User is signed out
@@ -1995,4 +2011,4 @@
         }
     </script>
 </body>
-</html>
+</ht
