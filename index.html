@@ -33,6 +33,7 @@
             --box-shadow: 0 2rem 3rem var(--color-light);
         }
 
+        /* [NOVO] Estilos para o Tema Escuro */
         .dark-theme {
             --color-background: #181a1e;
             --color-white: #202528;
@@ -40,7 +41,7 @@
             --color-dark-variant: #a3a6ad;
             --color-light: rgba(0, 0, 0, 0.4);
             --box-shadow: 0 2rem 3rem var(--color-light);
-            --color-info-light: #484d52;
+            --color-info-light: #484d52; 
         }
 
         * {
@@ -185,6 +186,7 @@
             margin-left: 1rem;
         }
         
+        /* [NOVO] Estilo para o botão de tema não herdar o fundo azul */
         #theme-toggler-link.active {
             background: none;
         }
@@ -193,6 +195,7 @@
             margin-top: 1.4rem;
         }
 
+        /* [NOVO] Barra superior para mobile */
         .top-bar {
             display: flex;
             align-items: center;
@@ -207,7 +210,7 @@
         }
         
         #menu-btn {
-            display: none;
+            display: none; /* Escondido por padrão */
             background: none;
             color: var(--color-dark);
             font-size: 1.8rem;
@@ -215,7 +218,7 @@
         }
 
         #mobile-page-title {
-            display: none;
+            display: none; /* Escondido por padrão */
         }
         
         .main-content {
@@ -313,7 +316,8 @@
         tbody tr:last-child td {
             border: none;
         }
-
+        
+        /* [NOVO] Wrapper para tabelas com rolagem horizontal */
         .table-wrapper {
             overflow-x: auto;
         }
@@ -323,26 +327,6 @@
             font-weight: bold;
         }
         
-        .vencimento-proximo {
-            background-color: #fffbe6 !important;
-        }
-        .dark-theme .vencimento-proximo {
-            background-color: #332c21 !important;
-        }
-        .vencimento-proximo td {
-            color: #8a6d3b !important;
-        }
-        .dark-theme .vencimento-proximo td {
-            color: #e4c489 !important;
-        }
-        .vencimento-aviso-icon {
-            color: var(--color-warning);
-            font-size: 1.2rem;
-            vertical-align: middle;
-            margin-left: 8px;
-            cursor: help;
-        }
-
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -423,13 +407,6 @@
             margin-bottom: 0.5rem;
         }
 
-        .search-instruction {
-            font-size: 0.75rem;
-            color: var(--color-info-dark);
-            margin-bottom: 1.5rem;
-            display: block;
-        }
-
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -485,20 +462,18 @@
             transition: border-color 0.3s ease, color 0.3s ease;
         }
 
+        /* ========== [NOVO] MEDIA QUERIES PARA RESPONSIVIDADE ========== */
         @media screen and (max-width: 1200px) {
             .container {
                 width: 94%;
                 grid-template-columns: 7rem auto;
             }
-
             aside .logo h2 {
                 display: none;
             }
-
             aside .sidebar h3 {
                 display: none;
             }
-
             aside .sidebar a {
                 width: 5.6rem;
             }
@@ -506,7 +481,6 @@
                 position: relative;
                 margin-top: 1.8rem;
             }
-
             main .insights {
                 grid-template-columns: 1fr;
             }
@@ -537,7 +511,7 @@
                 display: block;
                 transition: left 400ms ease, background-color 0.3s ease;
             }
-
+            
             aside.show-sidebar {
                 left: 0;
             }
@@ -545,11 +519,9 @@
             aside .logo {
                 margin-left: 1rem;
             }
-
              aside .logo h2 {
                 display: inline;
             }
-
             aside .sidebar h3 {
                 display: inline;
             }
@@ -563,7 +535,6 @@
                 position: absolute;
                 bottom: 5rem;
             }
-
             aside .close {
                 display: inline-block;
                 cursor: pointer;
@@ -586,7 +557,7 @@
             }
 
             .main-content > h1 {
-                display: none;
+                display: none; /* Esconde o H1 principal no mobile */
             }
             
             .form-container {
@@ -632,7 +603,7 @@
         </aside>
 
         <main>
-             <div class="top-bar">
+            <div class="top-bar">
                 <div class="top-bar-left">
                     <button id="menu-btn">
                         <span class="material-icons-sharp">menu</span>
@@ -659,10 +630,10 @@
                     <div class="expenses">
                         <span class="material-icons-sharp">bar_chart</span>
                         <div class="middle">
-                            <div>
+                           <div>
                                 <h3>Investimento (Custo Total)</h3>
                                 <h1 id="investimento-mes">R$ 0,00</h1>
-                            </div>
+                           </div>
                         </div>
                         <small class="text-muted">Soma do custo do estoque</small>
                     </div>
@@ -687,7 +658,7 @@
                     </div>
                      <div class="card">
                         <h2>Produtos com Mais Saída</h2>
-                        <div class="table-wrapper">
+                         <div class="table-wrapper">
                             <table>
                                 <thead>
                                     <tr>
@@ -699,7 +670,7 @@
                                     <tr><td colspan="2">Nenhuma venda registrada ainda.</td></tr>
                                 </tbody>
                             </table>
-                        </div>
+                         </div>
                     </div>
                 </div>
             </div>
@@ -709,7 +680,6 @@
                 <div class="card">
                     <h2>Cadastrar Novo Item</h2>
                     <form class="form-container" id="form-cadastro-produto">
-                        <input type="hidden" id="editProductId">
                         <div class="input-group">
                             <label for="codigoProduto">Código do Produto</label>
                             <input type="text" id="codigoProduto" placeholder="Ex: SB001" required>
@@ -752,8 +722,7 @@
 
                 <div class="card">
                     <h2>Itens em Estoque</h2>
-                    <input type="text" class="search-bar" id="searchEstoque" placeholder="Pesquisar...">
-                    <small class="search-instruction">Busque por nome, código, "vencendo" ou "repor".</small>
+                    <input type="text" class="search-bar" id="searchEstoque" placeholder="Pesquisar por nome ou código...">
                     <div class="table-wrapper">
                         <table>
                             <thead>
@@ -864,7 +833,7 @@
                             <tbody id="historico-vendas-body">
                             </tbody>
                         </table>
-                    </div>
+                     </div>
                 </div>
 
             </div>
@@ -911,51 +880,9 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         
-        var costha = costha || {};
-        costha.studio = costha.studio || {};
-        costha.studio.softwares = costha.studio.softwares || {};
-        costha.studio.softwares.entregastyle = costha.studio.softwares.entregastyle || {};
-
-        costha.studio.softwares.entregastyle.estoque = {
-            filtrarItens: function() {
-                const filtro = document.getElementById('searchEstoque').value.toUpperCase();
-                const tabelaCorpo = document.getElementById("tabela-estoque-body");
-                const linhas = tabelaCorpo.getElementsByTagName("tr");
-
-                for (let i = 0; i < linhas.length; i++) {
-                    const linha = linhas[i];
-                    const celulas = linha.getElementsByTagName("td");
-                    let exibirLinha = false;
-
-                    if (celulas.length > 1) {
-                        const codigoProduto = celulas[0].textContent || celulas[0].innerText;
-                        const nomeProduto = celulas[1].textContent || celulas[1].innerText;
-                        
-                        if (codigoProduto.toUpperCase().indexOf(filtro) > -1 || nomeProduto.toUpperCase().indexOf(filtro) > -1) {
-                            exibirLinha = true;
-                        }
-
-                        if ("VENCENDO".indexOf(filtro) > -1 && linha.classList.contains('vencimento-proximo')) {
-                            exibirLinha = true;
-                        }
-
-                        const quantidadeTexto = celulas[2].textContent || celulas[2].innerText;
-                        if ("REPOR".indexOf(filtro) > -1 && quantidadeTexto.toUpperCase().includes('REPOR')) {
-                             exibirLinha = true;
-                        }
-                        
-                        if (exibirLinha) {
-                            linha.style.display = "";
-                        } else {
-                            linha.style.display = "none";
-                        }
-                    }
-                }
-            }
-        };
-
         document.addEventListener('DOMContentLoaded', () => {
             
+            // --- [NOVO] LÓGICA DO MENU MOBILE E TEMA ---
             const menuBtn = document.getElementById('menu-btn');
             const closeBtn = document.getElementById('close-btn');
             const aside = document.querySelector('aside');
@@ -983,6 +910,7 @@
                 themeTogglerLink.querySelector('span').textContent = 'dark_mode';
             }
             
+            // --- NAVEGAÇÃO ENTRE ABAS ---
             const navLinks = document.querySelectorAll('.nav-link');
             const contentSections = document.querySelectorAll('.main-content');
             const mobilePageTitle = document.getElementById('mobile-page-title');
@@ -999,10 +927,13 @@
                     link.classList.add('active');
                     document.getElementById(targetId).classList.add('active');
                     
+                    // Atualiza o título no mobile e fecha o menu
                     mobilePageTitle.textContent = link.querySelector('h3').textContent;
+                    aside.classList.remove('show-sidebar');
                 });
             });
 
+            // --- FUNÇÕES DE FORMATAÇÃO E DATA ---
             function setCurrentDate() {
                 const today = new Date();
                 const options = { year: 'numeric', month: 'long', day: 'numeric' };
@@ -1024,6 +955,7 @@
                 input.addEventListener('input', () => formatCurrency(input));
             });
             
+            // --- LÓGICA DO MODAL DE CATEGORIAS ---
             const categoryModal = document.getElementById('category-modal');
             const openModalBtn = document.getElementById('open-category-modal');
             const closeModalBtn = document.getElementById('close-category-modal');
@@ -1044,15 +976,23 @@
             addCategoriaBtn.addEventListener('click', () => {
                 const nomeInput = document.getElementById('nova-categoria-nome');
                 const nomeCategoria = nomeInput.value.trim();
+
                 if (nomeCategoria === "") {
                     alert('Por favor, digite um nome para a categoria.');
                     return;
                 }
-                db.collection("categorias").add({ nome: nomeCategoria })
-                    .then(() => { nomeInput.value = ""; })
-                    .catch(error => { console.error("Erro ao adicionar categoria: ", error); });
+
+                db.collection("categorias").add({
+                    nome: nomeCategoria
+                }).then(() => {
+                    nomeInput.value = "";
+                }).catch(error => {
+                    console.error("Erro ao adicionar categoria: ", error);
+                });
             });
 
+
+            // --- FUNÇÕES DO FIREBASE (ESTOQUE) ---
             const formCadastro = document.getElementById('form-cadastro-produto');
             formCadastro.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -1068,34 +1008,18 @@
                 };
                 produto.lucroUnidade = produto.valorVenda - produto.custo;
 
-                const editId = formCadastro.editProductId.value;
-
-                if (editId) {
-                    db.collection("produtos").doc(editId).update(produto)
-                        .then(() => {
-                            alert("Produto atualizado com sucesso!");
-                            formCadastro.reset();
-                            formCadastro.editProductId.value = '';
-                            formCadastro.querySelector('button[type="submit"]').textContent = 'Cadastrar Produto';
-                        })
-                        .catch((error) => {
-                            console.error("Erro ao atualizar: ", error);
-                            alert("Falha ao atualizar produto.");
-                        });
-                } 
-                else {
-                    db.collection("produtos").add(produto)
-                        .then(() => {
-                            alert("Produto cadastrado com sucesso!");
-                            formCadastro.reset();
-                        })
-                        .catch((error) => {
-                            console.error("Erro ao cadastrar: ", error);
-                            alert("Falha ao cadastrar produto.");
-                        });
-                }
+                db.collection("produtos").add(produto)
+                .then(() => {
+                    alert("Produto cadastrado com sucesso!");
+                    formCadastro.reset();
+                })
+                .catch((error) => {
+                    console.error("Erro ao cadastrar: ", error);
+                    alert("Falha ao cadastrar produto.");
+                });
             });
 
+            // --- FUNÇÕES DE CARREGAMENTO (PRODUTOS E CATEGORIAS) ---
             function carregarCategorias() {
                 const selectCategoria = document.getElementById('categoria');
                 const listaCategoriasUl = document.getElementById('lista-categorias');
@@ -1103,11 +1027,13 @@
                 db.collection("categorias").orderBy("nome").onSnapshot(snapshot => {
                     selectCategoria.innerHTML = "";
                     listaCategoriasUl.innerHTML = "";
+
                     if (snapshot.empty) {
                         selectCategoria.innerHTML = '<option>Nenhuma categoria</option>';
                         listaCategoriasUl.innerHTML = '<li>Nenhuma categoria cadastrada.</li>';
                         return;
                     }
+
                     snapshot.forEach(doc => {
                         const categoria = doc.data();
                         const option = document.createElement('option');
@@ -1137,30 +1063,6 @@
                 }
             }
 
-            window.editarProduto = (id) => {
-                const form = document.getElementById('form-cadastro-produto');
-                db.collection('produtos').doc(id).get().then(doc => {
-                    if (doc.exists) {
-                        const produto = doc.data();
-                        form.editProductId.value = id;
-                        form.codigoProduto.value = produto.codigo;
-                        form.nomeProduto.value = produto.nome;
-                        form.validade.value = produto.validade;
-                        form.quantidade.value = produto.quantidade;
-                        form.custoProduto.value = produto.custo.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-                        form.valorVenda.value = produto.valorVenda.toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-                        form.categoria.value = produto.categoria;
-                        
-                        form.querySelector('button[type="submit"]').textContent = 'Salvar Alterações';
-                        form.scrollIntoView({ behavior: 'smooth' });
-
-                    } else {
-                        alert("Produto não encontrado!");
-                    }
-                }).catch(error => {
-                    console.error("Erro ao buscar produto para edição:", error);
-                });
-            }
 
             function carregarProdutos() {
                 const tabelaCorpo = document.getElementById("tabela-estoque-body");
@@ -1175,39 +1077,20 @@
                         return;
                     }
 
-                    const hoje = new Date();
-                    hoje.setHours(0, 0, 0, 0);
-
                     querySnapshot.forEach((doc) => {
                         const produto = doc.data();
                         const lucroUnidade = produto.lucroUnidade || (produto.valorVenda - produto.custo);
                         const tr = document.createElement('tr');
                         
-                        let avisoVencimento = '';
-                        let classeVencimento = '';
-
-                        if (produto.validade) {
-                            const [ano, mes, dia] = produto.validade.split('-').map(Number);
-                            const dataValidade = new Date(ano, mes - 1, dia);
-                            const diffTime = dataValidade.getTime() - hoje.getTime();
-                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                            if (diffDays >= 0 && diffDays <= 30) {
-                                classeVencimento = 'vencimento-proximo';
-                                avisoVencimento = `<span class="material-icons-sharp vencimento-aviso-icon" title="Vence em ${diffDays} dias!">warning</span>`;
-                            }
-                        }
-                        
-                        tr.className = classeVencimento;
-
                         tr.innerHTML = `
                             <td>${produto.codigo}</td>
-                            <td>${produto.nome} ${avisoVencimento}</td>
+                            <td>${produto.nome}</td>
                             <td class="${produto.quantidade < 3 ? 'low-stock-warning' : ''}">${produto.quantidade} ${produto.quantidade < 3 ? ' (Repor!)' : ''}</td>
                             <td>R$ ${produto.custo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                             <td>R$ ${produto.valorVenda.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                             <td>R$ ${lucroUnidade.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                             <td class="action-buttons">
-                                <button class="btn-warning" onclick="window.editarProduto('${doc.id}')"><span class="material-icons-sharp">edit</span></button>
+                                <button class="btn-warning"><span class="material-icons-sharp">edit</span></button>
                                 <button class="btn-danger" onclick="window.excluirProduto('${doc.id}', '${produto.nome}')"><span class="material-icons-sharp">delete</span></button>
                             </td>
                         `;
@@ -1236,6 +1119,7 @@
                 }
             }
 
+            // --- LÓGICA DE VENDAS / ORÇAMENTO ---
             let orcamento = [];
             const btnRegistrarVenda = document.getElementById('registrar-venda-btn');
 
@@ -1345,6 +1229,7 @@
                 });
             });
 
+            // --- LÓGICA DO HISTÓRICO DE VENDAS ---
             const pesquisaVendaInput = document.getElementById('pesquisa-venda-cliente');
             let todasAsVendas = [];
 
@@ -1406,8 +1291,7 @@
                 }
             });
 
-            document.getElementById('searchEstoque').addEventListener('keyup', costha.studio.softwares.entregastyle.estoque.filtrarItens);
-
+            // --- LÓGICA DO DASHBOARD ---
             let salesChartInstance;
             function atualizarDashboard() {
                 const faturamentoEl = document.getElementById('faturamento-mes');
