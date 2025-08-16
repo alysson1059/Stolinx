@@ -422,6 +422,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            white-space: nowrap; /* Prevent text wrapping in table cells */
         }
 
         th, td {
@@ -643,7 +644,7 @@
             .container.visible {
                 width: 100%;
                 grid-template-columns: 1fr;
-                padding: 0 1rem;
+                padding: 0; /* Remove horizontal padding from container */
             }
 
             aside {
@@ -692,12 +693,28 @@
 
             main {
                 margin-top: 0;
-                padding: 0 1rem;
+                padding: 0 1rem; /* Add padding to main content area */
             }
             
             .top-bar {
                 margin-top: 1.4rem;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                padding: 0 1rem;
+                background: var(--color-background);
+                z-index: 2;
+                box-shadow: 0 1rem 1rem var(--color-light);
             }
+            .dark-theme .top-bar {
+                 box-shadow: 0 1rem 1rem var(--color-light);
+            }
+
+            main .main-content {
+                padding-top: 5rem; /* Add padding to push content below fixed top-bar */
+            }
+
 
             #menu-btn {
                 display: inline-block;
