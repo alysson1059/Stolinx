@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=1280"> 
     <title>Stolinx - Gerenciador de Estoque</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Sharp" rel="stylesheet">
@@ -121,10 +121,6 @@
             color: var(--color-danger);
         }
         
-        aside .close {
-            display: none;
-        }
-
         aside .sidebar {
             display: flex;
             flex-direction: column;
@@ -191,31 +187,6 @@
         
         main {
             margin-top: 1.4rem;
-        }
-
-        .top-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-
-        .top-bar-left {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        #menu-btn {
-            display: none;
-            background: none;
-            color: var(--color-dark);
-            font-size: 1.8rem;
-            cursor: pointer;
-        }
-
-        #mobile-page-title {
-            display: none;
         }
         
         .main-content {
@@ -312,10 +283,6 @@
         
         tbody tr:last-child td {
             border: none;
-        }
-        
-        .table-wrapper {
-            overflow-x: auto;
         }
         
         .low-stock-warning {
@@ -458,108 +425,8 @@
             transition: border-color 0.3s ease, color 0.3s ease;
         }
 
-        /* ========== MEDIA QUERIES PARA RESPONSIVIDADE ========== */
-        @media screen and (max-width: 1200px) {
-            .container {
-                width: 94%;
-                grid-template-columns: 7rem auto;
-            }
-            aside .logo h2 {
-                display: none;
-            }
-            aside .sidebar h3 {
-                display: none;
-            }
-            aside .sidebar a {
-                width: 5.6rem;
-            }
-             aside .sidebar a:last-child {
-                position: relative;
-                margin-top: 1.8rem;
-            }
-            main .insights {
-                grid-template-columns: 1fr;
-            }
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        /* [REMOVIDO] Todas as regras de @media query foram removidas para forçar o layout de desktop */
 
-        @media screen and (max-width: 768px) {
-            :root {
-                --card-padding: 1.2rem;
-            }
-            .container {
-                width: 100%;
-                grid-template-columns: 1fr;
-                padding: 0 1rem;
-            }
-
-            aside {
-                position: fixed;
-                left: -100%;
-                background: var(--color-white);
-                width: 18rem;
-                z-index: 3;
-                box-shadow: 1rem 3rem 4rem var(--color-light);
-                height: 100vh;
-                padding-right: var(--card-padding);
-                display: block;
-                transition: left 400ms ease, background-color 0.3s ease;
-            }
-            
-            aside.show-sidebar {
-                left: 0;
-            }
-
-            aside .logo {
-                margin-left: 1rem;
-            }
-             aside .logo h2 {
-                display: inline;
-            }
-            aside .sidebar h3 {
-                display: inline;
-            }
-            
-            aside .sidebar a {
-                width: 100%;
-                height: 3.4rem;
-            }
-
-            aside .sidebar a:last-child {
-                position: absolute;
-                bottom: 5rem;
-            }
-            aside .close {
-                display: inline-block;
-                cursor: pointer;
-            }
-
-            main {
-                margin-top: 0;
-                padding: 0 1rem;
-            }
-            
-            .top-bar {
-                margin-top: 1.4rem;
-            }
-
-            #menu-btn {
-                display: inline-block;
-            }
-            #mobile-page-title {
-                display: inline-block;
-            }
-
-            .main-content > h1 {
-                display: none;
-            }
-            
-            .form-container {
-                grid-template-columns: 1fr;
-            }
-        }
     </style>
 </head>
 <body>
@@ -568,9 +435,6 @@
             <div class="top">
                 <div class="logo">
                     <h2>STOL<span class="danger">INX</span></h2>
-                </div>
-                <div class="close" id="close-btn">
-                    <span class="material-icons-sharp">close</span>
                 </div>
             </div>
 
@@ -599,15 +463,6 @@
         </aside>
 
         <main>
-             <div class="top-bar">
-                <div class="top-bar-left">
-                    <button id="menu-btn">
-                        <span class="material-icons-sharp">menu</span>
-                    </button>
-                    <h1 id="mobile-page-title">Dashboard</h1>
-                </div>
-             </div>
-
             <div id="dashboard" class="main-content active">
                 <h1>Dashboard</h1>
                 <div class="date" id="current-date">Carregando data...</div>
@@ -654,19 +509,17 @@
                     </div>
                      <div class="card">
                         <h2>Produtos com Mais Saída</h2>
-                         <div class="table-wrapper">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Produto</th>
-                                        <th>Unidades Vendidas</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="produtos-mais-saida-body">
-                                    <tr><td colspan="2">Nenhuma venda registrada ainda.</td></tr>
-                                </tbody>
-                            </table>
-                         </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Produto</th>
+                                    <th>Unidades Vendidas</th>
+                                </tr>
+                            </thead>
+                            <tbody id="produtos-mais-saida-body">
+                                <tr><td colspan="2">Nenhuma venda registrada ainda.</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -719,23 +572,21 @@
                 <div class="card">
                     <h2>Itens em Estoque</h2>
                     <input type="text" class="search-bar" id="searchEstoque" placeholder="Pesquisar por nome ou código...">
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Código</th>
-                                    <th>Produto</th>
-                                    <th>Qtd.</th>
-                                    <th>Custo</th>
-                                    <th>Venda</th>
-                                    <th>Lucro/Un.</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabela-estoque-body">
-                            </tbody>
-                        </table>
-                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Produto</th>
+                                <th>Qtd.</th>
+                                <th>Custo</th>
+                                <th>Venda</th>
+                                <th>Lucro/Un.</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabela-estoque-body">
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -766,21 +617,19 @@
                     </div>
 
                     <h2 style="margin-top: 2rem;">Orçamento Atual</h2>
-                     <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Produto</th>
-                                    <th>Qtd.</th>
-                                    <th>Preço Unit.</th>
-                                    <th>Subtotal</th>
-                                    <th>Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody id="orcamento-body">
-                            </tbody>
-                        </table>
-                     </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Qtd.</th>
+                                <th>Preço Unit.</th>
+                                <th>Subtotal</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orcamento-body">
+                        </tbody>
+                    </table>
 
                     <div style="text-align: right; margin-top: 1.5rem;">
                         <h3>Subtotal: <span id="subtotal-venda">R$ 0,00</span></h3>
@@ -816,20 +665,18 @@
                 <div class="card">
                     <h2>Histórico de Vendas</h2>
                     <input type="text" class="search-bar" id="pesquisa-venda-cliente" placeholder="Pesquisar por nome do cliente...">
-                     <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Data</th>
-                                    <th>Itens Vendidos</th>
-                                    <th>Valor Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="historico-vendas-body">
-                            </tbody>
-                        </table>
-                     </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Data</th>
+                                <th>Itens Vendidos</th>
+                                <th>Valor Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historico-vendas-body">
+                        </tbody>
+                    </table>
                 </div>
 
             </div>
@@ -878,25 +725,12 @@
         
         document.addEventListener('DOMContentLoaded', () => {
             
-            // --- LÓGICA DO MENU MOBILE E TEMA ---
-            const menuBtn = document.getElementById('menu-btn');
-            const closeBtn = document.getElementById('close-btn');
-            const aside = document.querySelector('aside');
+            // --- LÓGICA DO TEMA ---
             const themeTogglerLink = document.getElementById('theme-toggler-link');
-
-            menuBtn.addEventListener('click', () => {
-                aside.classList.add('show-sidebar');
-            });
-
-            closeBtn.addEventListener('click', () => {
-                aside.classList.remove('show-sidebar');
-            });
-            
             themeTogglerLink.addEventListener('click', (e) => {
                 e.preventDefault();
                 const isDark = document.body.classList.toggle('dark-theme');
                 const iconSpan = themeTogglerLink.querySelector('span');
-                
                 iconSpan.textContent = isDark ? 'dark_mode' : 'light_mode';
                 localStorage.setItem('darkMode', isDark ? 'enabled' : 'disabled');
             });
@@ -909,8 +743,7 @@
             // --- NAVEGAÇÃO ENTRE ABAS ---
             const navLinks = document.querySelectorAll('.nav-link');
             const contentSections = document.querySelectorAll('.main-content');
-            const mobilePageTitle = document.getElementById('mobile-page-title');
-
+            
             navLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -922,9 +755,6 @@
                     
                     link.classList.add('active');
                     document.getElementById(targetId).classList.add('active');
-                    
-                    mobilePageTitle.textContent = link.querySelector('h3').textContent;
-                    aside.classList.remove('show-sidebar');
                 });
             });
 
