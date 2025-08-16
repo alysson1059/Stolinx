@@ -347,12 +347,29 @@
             display: block;
         }
         
-        main .date {
-            display: inline-block;
-            background: var(--color-light);
-            border-radius: var(--border-radius-1);
-            margin-top: 1rem;
-            padding: 0.5rem 1.6rem;
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .dashboard-filters {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .dashboard-filters select {
+            padding: 8px;
+            font-size: 0.85rem;
+        }
+
+        #export-dashboard-btn {
+            padding: 8px 12px;
+            width: auto;
         }
         
         main .insights {
@@ -644,7 +661,6 @@
                 padding: 0; /* Remove horizontal padding from container */
             }
             
-            /* THIS IS THE FIX: Reduce padding on cards for mobile */
             .card {
                 padding: var(--padding-1);
             }
@@ -820,51 +836,59 @@
              </div>
 
             <div id="dashboard" class="main-content active">
-                <h1>Dashboard</h1>
-                <div class="date" id="current-date">Carregando data...</div>
+                <div class="dashboard-header">
+                    <h1 id="dashboard-title">Dashboard</h1>
+                    <div class="dashboard-filters">
+                        <select id="filtro-mes"></select>
+                        <select id="filtro-ano"></select>
+                        <button id="export-dashboard-btn" class="btn-success">
+                            <span class="material-icons-sharp">share</span>
+                        </button>
+                    </div>
+                </div>
 
                 <div class="insights">
                     <div class="sales">
                         <span class="material-icons-sharp">analytics</span>
                         <div class="middle">
                             <div>
-                                <h3>Faturamento do Mês</h3>
+                                <h3>Faturamento do Período</h3>
                                 <h1 id="faturamento-mes">R$ 0,00</h1>
                             </div>
                         </div>
-                        <small class="text-muted">Aguardando vendas</small>
+                        <small class="text-muted">Total de vendas no período</small>
                     </div>
                     <div class="expenses">
                         <span class="material-icons-sharp">bar_chart</span>
                         <div class="middle">
                             <div>
-                                <h3>Investimento (Custo Total)</h3>
+                                <h3>Investimento (Estoque Atual)</h3>
                                 <h1 id="investimento-mes">R$ 0,00</h1>
                             </div>
                         </div>
-                        <small class="text-muted">Soma do custo do estoque</small>
+                        <small class="text-muted">Custo total do estoque</small>
                     </div>
                     <div class="income">
                         <span class="material-icons-sharp">stacked_line_chart</span>
                         <div class="middle">
                             <div>
-                                <h3>Lucro Potencial</h3>
+                                <h3>Lucro Potencial (Estoque Atual)</h3>
                                 <h1 id="lucro-mes">R$ 0,00</h1>
                             </div>
                         </div>
-                        <small class="text-muted">Total de venda - Custo total</small>
+                        <small class="text-muted">Lucro de todo o estoque</small>
                     </div>
                 </div>
 
                 <div class="dashboard-grid" style="margin-top: 1.5rem;">
                     <div class="card">
-                        <h2>Vendas por Produto (Unidades no Mês)</h2>
+                        <h2>Vendas por Produto (Período)</h2>
                         <div class="chart-container">
                             <canvas id="salesChart"></canvas>
                         </div>
                     </div>
                      <div class="card">
-                        <h2>Produtos com Mais Saída</h2>
+                        <h2>Produtos com Mais Saída (Período)</h2>
                         <div class="table-wrapper">
                             <table>
                                 <thead>
@@ -874,7 +898,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="produtos-mais-saida-body">
-                                    <tr><td colspan="2">Nenhuma venda registrada ainda.</td></tr>
+                                    <tr><td colspan="2">Nenhuma venda registrada.</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -956,7 +980,7 @@
                 <h1>Registrar Venda / Orçamento</h1>
                 <div class="card">
                     <h2>Itens e Cliente</h2>
-                    <div class="form-container">
+                    <div class="form-container" id="form-vendas">
                         <div class="input-group" style="grid-column: 1 / -1;">
                             <label for="nomeCliente">Nome do Cliente</label>
                             <input type="text" id="nomeCliente" placeholder="Opcional">
@@ -1324,13 +1348,6 @@
                 });
             });
 
-            function setCurrentDate() {
-                const today = new Date();
-                const options = { year: 'numeric', month: 'long', day: 'numeric' };
-                document.getElementById('current-date').textContent = today.toLocaleDateString('pt-BR', options);
-                document.getElementById('dataVenda').value = today.toLocaleDateString('pt-BR');
-            }
-
             function formatCurrency(input) {
                 let value = input.value.replace(/\D/g, '');
                 if (value === "") {
@@ -1410,6 +1427,8 @@
                             showAppNotification("Falha ao atualizar produto.");
                         });
                 } else {
+                    // Add creation timestamp for new products
+                    produto.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                     getUserCollection("produtos").add(produto)
                         .then(() => {
                             showAppNotification("Produto cadastrado com sucesso!", "Sucesso");
@@ -1549,6 +1568,7 @@
                             option.value = doc.id;
                             option.textContent = `${produto.nome} (Estoque: ${produto.quantidade}) - R$ ${produto.valorVenda.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                             option.dataset.price = produto.valorVenda;
+                            option.dataset.cost = produto.custo;
                             option.dataset.name = produto.nome;
                             selectVenda.appendChild(option);
                         }
@@ -1579,9 +1599,10 @@
                 const selectedOption = select.options[select.selectedIndex];
                 const produtoNome = selectedOption.dataset.name;
                 const produtoPreco = parseFloat(selectedOption.dataset.price);
+                const produtoCusto = parseFloat(selectedOption.dataset.cost);
                 const quantidade = parseInt(document.getElementById('quantidadeVenda').value);
 
-                orcamento.push({ id: produtoId, nome: produtoNome, qtd: quantidade, preco: produtoPreco });
+                orcamento.push({ id: produtoId, nome: produtoNome, qtd: quantidade, preco: produtoPreco, custo: produtoCusto });
                 atualizarTabelaOrcamento();
             });
             
@@ -1645,13 +1666,18 @@
                     return;
                 }
 
+                const totalVenda = parseFloat(document.getElementById('total-venda').textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.'));
+                const custoTotalVenda = orcamento.reduce((total, item) => total + (item.custo * item.qtd), 0);
+                const lucroVenda = totalVenda - custoTotalVenda;
+
                 const venda = {
                     cliente: document.getElementById('nomeCliente').value || 'Não informado',
                     data: firebase.firestore.FieldValue.serverTimestamp(),
                     itens: orcamento,
                     subtotal: parseFloat(document.getElementById('subtotal-venda').textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.')),
                     desconto: parseFloat(document.getElementById('descontoVenda').value.replace(/\./g, '').replace(',', '.')) || 0,
-                    total: parseFloat(document.getElementById('total-venda').textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.'))
+                    total: totalVenda,
+                    lucro: lucroVenda
                 };
 
                 const batch = db.batch();
@@ -1774,61 +1800,97 @@
                 }
             });
 
+            // --- DASHBOARD LOGIC ---
             let salesChartInstance;
+            const filtroMes = document.getElementById('filtro-mes');
+            const filtroAno = document.getElementById('filtro-ano');
+            const exportBtn = document.getElementById('export-dashboard-btn');
+            const dashboardTitle = document.getElementById('dashboard-title');
+
+            function populateDateFilters() {
+                const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+                filtroMes.innerHTML = '<option value="all">Ano Inteiro</option>';
+                meses.forEach((mes, index) => {
+                    filtroMes.innerHTML += `<option value="${index}">${mes}</option>`;
+                });
+
+                const anoAtual = new Date().getFullYear();
+                filtroAno.innerHTML = '';
+                for (let i = anoAtual; i >= anoAtual - 5; i--) {
+                    filtroAno.innerHTML += `<option value="${i}">${i}</option>`;
+                }
+
+                filtroMes.value = new Date().getMonth();
+                filtroAno.value = anoAtual;
+            }
+
             function atualizarDashboard() {
+                const ano = parseInt(filtroAno.value);
+                const mes = filtroMes.value;
+
                 const faturamentoEl = document.getElementById('faturamento-mes');
                 const investimentoEl = document.getElementById('investimento-mes');
                 const lucroEl = document.getElementById('lucro-mes');
                 const topSellersBody = document.getElementById('produtos-mais-saida-body');
-
+                
+                // --- CALCULA INVESTIMENTO TOTAL E LUCRO POTENCIAL (SEMPRE DO ESTOQUE ATUAL) ---
                 getUserCollection('produtos').onSnapshot(snapshot => {
                     let investimentoTotal = 0;
-                    let lucroPotencial = 0;
+                    let lucroPotencialTotal = 0;
                     snapshot.forEach(doc => {
                         const p = doc.data();
-                        investimentoTotal += p.custo * p.quantidade;
-                        lucroPotencial += (p.valorVenda - p.custo) * p.quantidade;
+                        investimentoTotal += (p.custo || 0) * (p.quantidade || 0);
+                        lucroPotencialTotal += (p.valorVenda - p.custo) * (p.quantidade || 0);
                     });
                     investimentoEl.textContent = `R$ ${investimentoTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                    lucroEl.textContent = `R$ ${lucroPotencial.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    lucroEl.textContent = `R$ ${lucroPotencialTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                 });
 
-                getUserCollection('vendas').onSnapshot(snapshot => {
-                    let faturamentoMensal = 0;
-                    const hoje = new Date();
-                    const mesAtual = hoje.getMonth();
-                    const anoAtual = hoje.getFullYear();
-                    
-                    const topSellers = {};
+                // --- CALCULA FATURAMENTO E ITENS MAIS VENDIDOS DO PERÍODO SELECIONADO ---
+                let primeiroDia, ultimoDia;
+                if (mes === 'all') {
+                    primeiroDia = new Date(ano, 0, 1);
+                    ultimoDia = new Date(ano, 11, 31, 23, 59, 59);
+                    dashboardTitle.textContent = `Dashboard - Ano de ${ano}`;
+                } else {
+                    primeiroDia = new Date(ano, parseInt(mes), 1);
+                    ultimoDia = new Date(ano, parseInt(mes) + 1, 0, 23, 59, 59);
+                    dashboardTitle.textContent = `Dashboard - ${filtroMes.options[filtroMes.selectedIndex].text} de ${ano}`;
+                }
 
-                    snapshot.forEach(doc => {
-                        const v = doc.data();
-                        if (v.data && v.data.toDate) {
-                            const dataVenda = v.data.toDate();
-                            if (dataVenda.getMonth() === mesAtual && dataVenda.getFullYear() === anoAtual) {
-                                faturamentoMensal += v.total;
+                getUserCollection('vendas')
+                    .where('data', '>=', primeiroDia)
+                    .where('data', '<=', ultimoDia)
+                    .onSnapshot(snapshot => {
+                        let faturamentoPeriodo = 0;
+                        const topSellers = {};
+
+                        snapshot.forEach(doc => {
+                            const v = doc.data();
+                            faturamentoPeriodo += v.total || 0;
+                            if (v.itens) {
                                 v.itens.forEach(item => {
                                     topSellers[item.nome] = (topSellers[item.nome] || 0) + item.qtd;
                                 });
                             }
-                        }
-                    });
-                    faturamentoEl.textContent = `R$ ${faturamentoMensal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-
-                    const sortedTopSellers = Object.entries(topSellers).sort((a, b) => b[1] - a[1]);
-                    
-                    topSellersBody.innerHTML = '';
-                    if (sortedTopSellers.length === 0) {
-                        topSellersBody.innerHTML = '<tr><td colspan="2">Nenhuma venda este mês.</td></tr>';
-                    } else {
-                        sortedTopSellers.slice(0, 5).forEach(([nome, quantidade]) => {
-                            const tr = document.createElement('tr');
-                            tr.innerHTML = `<td>${nome}</td><td>${quantidade}</td>`;
-                            topSellersBody.appendChild(tr);
                         });
-                    }
-                    renderProductPieChart(sortedTopSellers);
-                });
+
+                        faturamentoEl.textContent = `R$ ${faturamentoPeriodo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+                        const sortedTopSellers = Object.entries(topSellers).sort((a, b) => b[1] - a[1]);
+                        
+                        topSellersBody.innerHTML = '';
+                        if (sortedTopSellers.length === 0) {
+                            topSellersBody.innerHTML = '<tr><td colspan="2">Nenhuma venda no período.</td></tr>';
+                        } else {
+                            sortedTopSellers.slice(0, 5).forEach(([nome, quantidade]) => {
+                                const tr = document.createElement('tr');
+                                tr.innerHTML = `<td>${nome}</td><td>${quantidade}</td>`;
+                                topSellersBody.appendChild(tr);
+                            });
+                        }
+                        renderProductPieChart(sortedTopSellers);
+                    });
             }
             
             function renderProductPieChart(topSellersData) {
@@ -1876,9 +1938,56 @@
                     }
                 });
             }
+
+            async function exportDashboardData() {
+                const periodo = dashboardTitle.textContent.replace('Dashboard - ', '');
+                const faturamento = document.getElementById('faturamento-mes').textContent;
+                const investimento = document.getElementById('investimento-mes').textContent;
+                const lucro = document.getElementById('lucro-mes').textContent;
+                
+                let topSellersText = '';
+                const topSellersRows = document.querySelectorAll('#produtos-mais-saida-body tr');
+                topSellersRows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if(cells.length > 1) {
+                        topSellersText += `\n- ${cells[0].textContent}: ${cells[1].textContent} unidades`;
+                    } else {
+                        topSellersText = "\nNenhuma venda registrada no período.";
+                    }
+                });
+
+                const reportText = `*Relatório Stolinx - ${periodo}*
+                \n- *Faturamento:* ${faturamento}
+                \n- *Investimento (Estoque Atual):* ${investimento}
+                \n- *Lucro Potencial (Estoque Atual):* ${lucro}
+                \n\n*Produtos Mais Vendidos:*${topSellersText}`;
+
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: `Relatório Stolinx - ${periodo}`,
+                            text: reportText,
+                        });
+                    } catch (err) {
+                        console.error('Erro ao compartilhar:', err);
+                    }
+                } else {
+                     try {
+                        await navigator.clipboard.writeText(reportText);
+                        showAppNotification('Relatório copiado para a área de transferência!', 'Sucesso');
+                    } catch (err) {
+                        console.error('Falha ao copiar:', err);
+                        showAppNotification('Falha ao copiar o relatório.');
+                    }
+                }
+            }
             
             // --- INITIALIZATION ---
-            setCurrentDate();
+            filtroMes.addEventListener('change', atualizarDashboard);
+            filtroAno.addEventListener('change', atualizarDashboard);
+            exportBtn.addEventListener('click', exportDashboardData);
+
+            populateDateFilters();
             carregarProdutos();
             carregarCategorias();
             carregarHistoricoVendas();
@@ -1887,4 +1996,3 @@
     </script>
 </body>
 </html>
-
