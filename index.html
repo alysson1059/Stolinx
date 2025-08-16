@@ -1048,6 +1048,17 @@
                             <input type="text" id="dataVenda" readonly>
                         </div>
                         <div class="input-group">
+                            <label for="formaPagamento">Forma de Pagamento</label>
+                            <select id="formaPagamento">
+                                <option>Dinheiro</option>
+                                <option>Pix</option>
+                                <option>Crédito</option>
+                                <option>Débito</option>
+                                <option>Boleto</option>
+                                <option>A Prazo</option>
+                            </select>
+                        </div>
+                        <div class="input-group" style="grid-column: 1 / -1;">
                             <label>Ações</label>
                             <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                                <button type="button" id="share-whatsapp" style="background-color: #25D366; display:flex; align-items: center; justify-content: center; gap: 0.5rem;">
@@ -1071,6 +1082,7 @@
                                     <th>Cliente</th>
                                     <th>Data</th>
                                     <th>Itens Vendidos</th>
+                                    <th>Forma Pag.</th>
                                     <th>Valor Total</th>
                                 </tr>
                             </thead>
@@ -1377,6 +1389,11 @@
                     mobilePageTitle.textContent = link.querySelector('h3').textContent;
                 });
             });
+
+            function setCurrentDate() {
+                const today = new Date();
+                document.getElementById('dataVenda').value = today.toLocaleDateString('pt-BR');
+            }
 
             function formatCurrency(input) {
                 let value = input.value.replace(/\D/g, '');
@@ -1699,6 +1716,7 @@
                 const totalVenda = parseFloat(document.getElementById('total-venda').textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.'));
                 const custoTotalVenda = orcamento.reduce((total, item) => total + (item.custo * item.qtd), 0);
                 const lucroVenda = totalVenda - custoTotalVenda;
+                const formaPagamento = document.getElementById('formaPagamento').value;
 
                 const venda = {
                     cliente: document.getElementById('nomeCliente').value || 'Não informado',
@@ -1707,7 +1725,8 @@
                     subtotal: parseFloat(document.getElementById('subtotal-venda').textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.')),
                     desconto: parseFloat(document.getElementById('descontoVenda').value.replace(/\./g, '').replace(',', '.')) || 0,
                     total: totalVenda,
-                    lucro: lucroVenda
+                    lucro: lucroVenda,
+                    formaPagamento: formaPagamento
                 };
 
                 const batch = db.batch();
@@ -1761,7 +1780,7 @@
                 tabelaCorpo.innerHTML = '';
 
                 if (vendasParaRenderizar.length === 0) {
-                    tabelaCorpo.innerHTML = '<tr><td colspan="4">Nenhuma venda encontrada.</td></tr>';
+                    tabelaCorpo.innerHTML = '<tr><td colspan="5">Nenhuma venda encontrada.</td></tr>';
                     return;
                 }
 
@@ -1777,6 +1796,7 @@
                         <td>${venda.cliente}</td>
                         <td>${dataFormatada}</td>
                         <td>${itensFormatados}</td>
+                        <td>${venda.formaPagamento || 'N/A'}</td>
                         <td>R$ ${venda.total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>
                     `;
                     tabelaCorpo.appendChild(tr);
@@ -2020,6 +2040,7 @@
             filtroAno.addEventListener('change', atualizarDashboard);
             exportBtn.addEventListener('click', exportDashboardData);
 
+            setCurrentDate();
             populateDateFilters();
             carregarProdutos();
             carregarCategorias();
