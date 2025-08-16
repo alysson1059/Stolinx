@@ -1146,6 +1146,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
         let currentUserId = null; // Will hold the logged-in user's ID
+        let firestoreUnsubscribes = []; // Array to hold all listener unsub functions
         
         // --- AUTHENTICATION LOGIC ---
         
@@ -1242,6 +1243,11 @@
         // Handle Logout
         document.getElementById('logout-btn').addEventListener('click', (e) => {
             e.preventDefault();
+            
+            // Unsubscribe from all Firestore listeners
+            firestoreUnsubscribes.forEach(unsubscribe => unsubscribe());
+            firestoreUnsubscribes = []; // Clear the array
+
             auth.signOut();
         });
 
@@ -1466,10 +1472,9 @@
             });
 
             function carregarCategorias() {
-                const selectCategoria = document.getElementById('categoria');
-                const listaCategoriasUl = document.getElementById('lista-categorias');
-
-                getUserCollection("categorias").orderBy("nome").onSnapshot(snapshot => {
+                const unsub = getUserCollection("categorias").orderBy("nome").onSnapshot(snapshot => {
+                    const selectCategoria = document.getElementById('categoria');
+                    const listaCategoriasUl = document.getElementById('lista-categorias');
                     selectCategoria.innerHTML = "";
                     listaCategoriasUl.innerHTML = "";
                     if (snapshot.empty) {
@@ -1499,6 +1504,7 @@
                     console.error("Firestore read error on categories:", error);
                     showAppNotification("Erro ao carregar categorias. Verifique suas regras de segurança no Firebase.");
                 });
+                firestoreUnsubscribes.push(unsub);
             }
             
             window.excluirCategoria = (id, nome) => {
@@ -1537,10 +1543,9 @@
             }
 
             function carregarProdutos() {
-                const tabelaCorpo = document.getElementById("tabela-estoque-body");
-                const selectVenda = document.getElementById('selectProdutoVenda');
-
-                getUserCollection("produtos").orderBy("nome").onSnapshot((querySnapshot) => {
+                const unsub = getUserCollection("produtos").orderBy("nome").onSnapshot((querySnapshot) => {
+                    const tabelaCorpo = document.getElementById("tabela-estoque-body");
+                    const selectVenda = document.getElementById('selectProdutoVenda');
                     tabelaCorpo.innerHTML = '';
                     selectVenda.innerHTML = '<option value="">Selecione um item do estoque</option>';
                     
@@ -1598,6 +1603,7 @@
                         }
                     });
                 });
+                firestoreUnsubscribes.push(unsub);
             }
 
             window.excluirProduto = (id, nome) => {
@@ -1731,7 +1737,7 @@
             let todasAsVendas = [];
 
             function carregarHistoricoVendas() {
-                getUserCollection('vendas').onSnapshot(snapshot => {
+                const unsub = getUserCollection('vendas').onSnapshot(snapshot => {
                     todasAsVendas = [];
                     snapshot.forEach(doc => {
                         todasAsVendas.push(doc.data());
@@ -1747,6 +1753,7 @@
                 }, error => {
                     console.error("Erro ao carregar histórico de vendas: ", error);
                 });
+                firestoreUnsubscribes.push(unsub);
             }
 
             function renderizarVendas(vendasParaRenderizar) {
@@ -1858,7 +1865,7 @@
                 const topSellersBody = document.getElementById('produtos-mais-saida-body');
                 
                 // --- CALCULA INVESTIMENTO TOTAL E LUCRO POTENCIAL (SEMPRE DO ESTOQUE ATUAL) ---
-                getUserCollection('produtos').onSnapshot(snapshot => {
+                const unsubEstoque = getUserCollection('produtos').onSnapshot(snapshot => {
                     let investimentoTotal = 0;
                     let lucroPotencialTotal = 0;
                     snapshot.forEach(doc => {
@@ -1869,6 +1876,7 @@
                     investimentoEl.textContent = `R$ ${investimentoTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                     lucroEl.textContent = `R$ ${lucroPotencialTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                 });
+                firestoreUnsubscribes.push(unsubEstoque);
 
                 // --- CALCULA FATURAMENTO E ITENS MAIS VENDIDOS DO PERÍODO SELECIONADO ---
                 let primeiroDia, ultimoDia;
@@ -1882,7 +1890,7 @@
                     dashboardTitle.textContent = `Dashboard - ${filtroMes.options[filtroMes.selectedIndex].text} de ${ano}`;
                 }
 
-                getUserCollection('vendas')
+                const unsubVendas = getUserCollection('vendas')
                     .where('data', '>=', primeiroDia)
                     .where('data', '<=', ultimoDia)
                     .onSnapshot(snapshot => {
@@ -1915,6 +1923,7 @@
                         }
                         renderProductPieChart(sortedTopSellers);
                     });
+                firestoreUnsubscribes.push(unsubVendas);
             }
             
             function renderProductPieChart(topSellersData) {
