@@ -1030,6 +1030,7 @@
         </main>
     </div>
 
+    <!-- Category Management Modal -->
     <div class="modal-overlay" id="category-modal">
         <div class="modal-container">
             <div class="modal-header">
@@ -1049,6 +1050,24 @@
                 <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Categorias Existentes</h3>
                 <ul id="lista-categorias">
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generic Notification/Confirmation Modal -->
+    <div class="modal-overlay" id="app-notification-modal">
+        <div class="modal-container" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2 id="app-notification-title">Aviso</h2>
+                <button class="close-modal" id="app-notification-close-btn">
+                    <span class="material-icons-sharp">close</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="app-notification-message" style="margin-bottom: 1.5rem;"></p>
+                <div id="app-notification-buttons" style="display: flex; justify-content: flex-end; gap: 1rem;">
+                    <!-- Buttons are dynamically injected here -->
+                </div>
             </div>
         </div>
     </div>
@@ -1196,6 +1215,49 @@
         
         // This function will only be called after a user logs in
         function initializeAppLogic() {
+            // --- MODAL AND NOTIFICATION SETUP ---
+            const notificationModal = document.getElementById('app-notification-modal');
+            const notificationTitle = document.getElementById('app-notification-title');
+            const notificationMessage = document.getElementById('app-notification-message');
+            const notificationButtons = document.getElementById('app-notification-buttons');
+            const notificationCloseBtn = document.getElementById('app-notification-close-btn');
+
+            function closeNotificationModal() {
+                notificationModal.style.display = 'none';
+            }
+            notificationCloseBtn.addEventListener('click', closeNotificationModal);
+            notificationModal.addEventListener('click', (e) => {
+                if (e.target === notificationModal) {
+                    closeNotificationModal();
+                }
+            });
+
+            function showAppNotification(message, title = 'Aviso') {
+                notificationTitle.textContent = title;
+                notificationMessage.textContent = message;
+                notificationButtons.innerHTML = '<button id="notification-ok-btn" class="btn-success">OK</button>';
+                notificationModal.style.display = 'flex';
+                document.getElementById('notification-ok-btn').addEventListener('click', closeNotificationModal);
+            }
+
+            function showAppConfirmation(message, onConfirm, title = 'Confirmação') {
+                notificationTitle.textContent = title;
+                notificationMessage.textContent = message;
+                notificationButtons.innerHTML = `
+                    <button id="confirmation-cancel-btn">Cancelar</button>
+                    <button id="confirmation-ok-btn" class="btn-danger">Confirmar</button>
+                `;
+                notificationModal.style.display = 'flex';
+                document.getElementById('confirmation-ok-btn').addEventListener('click', () => {
+                    if (typeof onConfirm === 'function') {
+                        onConfirm();
+                    }
+                    closeNotificationModal();
+                });
+                document.getElementById('confirmation-cancel-btn').addEventListener('click', closeNotificationModal);
+            }
+
+
             const menuBtn = document.getElementById('menu-btn');
             const closeBtn = document.getElementById('close-btn');
             const aside = document.querySelector('aside');
@@ -1291,8 +1353,7 @@
                 const nomeInput = document.getElementById('nova-categoria-nome');
                 const nomeCategoria = nomeInput.value.trim();
                 if (nomeCategoria === "") {
-                    // Replace alert with a more modern notification if desired
-                    alert('Por favor, digite um nome para a categoria.');
+                    showAppNotification('Por favor, digite um nome para a categoria.');
                     return;
                 }
                 getUserCollection("categorias").add({ nome: nomeCategoria })
@@ -1320,24 +1381,24 @@
                 if (editId) {
                     getUserCollection("produtos").doc(editId).update(produto)
                         .then(() => {
-                            alert("Produto atualizado com sucesso!");
+                            showAppNotification("Produto atualizado com sucesso!", "Sucesso");
                             formCadastro.reset();
                             formCadastro.editProductId.value = '';
                             formCadastro.querySelector('button[type="submit"]').textContent = 'Cadastrar Produto';
                         })
                         .catch((error) => {
                             console.error("Erro ao atualizar: ", error);
-                            alert("Falha ao atualizar produto.");
+                            showAppNotification("Falha ao atualizar produto.");
                         });
                 } else {
                     getUserCollection("produtos").add(produto)
                         .then(() => {
-                            alert("Produto cadastrado com sucesso!");
+                            showAppNotification("Produto cadastrado com sucesso!", "Sucesso");
                             formCadastro.reset();
                         })
                         .catch((error) => {
                             console.error("Erro ao cadastrar: ", error);
-                            alert("Falha ao cadastrar produto.");
+                            showAppNotification("Falha ao cadastrar produto.");
                         });
                 }
             });
@@ -1372,15 +1433,20 @@
                         `;
                         listaCategoriasUl.appendChild(li);
                     });
+                }, error => {
+                    console.error("Firestore read error on categories:", error);
+                    showAppNotification("Erro ao carregar categorias. Verifique suas regras de segurança no Firebase.");
                 });
             }
             
             window.excluirCategoria = (id, nome) => {
-                if (confirm(`Tem certeza que deseja excluir a categoria "${nome}"?`)) {
+                const onConfirm = () => {
                     getUserCollection("categorias").doc(id).delete().catch(error => {
                         console.error("Erro ao excluir categoria: ", error);
+                        showAppNotification("Erro ao excluir categoria.");
                     });
-                }
+                };
+                showAppConfirmation(`Tem certeza que deseja excluir a categoria "${nome}"?`, onConfirm);
             }
 
             window.editarProduto = (id) => {
@@ -1401,7 +1467,7 @@
                         form.scrollIntoView({ behavior: 'smooth' });
 
                     } else {
-                        alert("Produto não encontrado!");
+                        showAppNotification("Produto não encontrado!");
                     }
                 }).catch(error => {
                     console.error("Erro ao buscar produto para edição:", error);
@@ -1472,14 +1538,15 @@
             }
 
             window.excluirProduto = (id, nome) => {
-                if (confirm(`Tem certeza que deseja excluir o produto "${nome}"?`)) {
+                const onConfirm = () => {
                     getUserCollection("produtos").doc(id).delete().then(() => {
-                        alert("Produto excluído com sucesso!");
+                        showAppNotification("Produto excluído com sucesso!", "Sucesso");
                     }).catch((error) => {
                         console.error("Erro ao excluir: ", error);
-                        alert("Falha ao excluir produto.");
+                        showAppNotification("Falha ao excluir produto.");
                     });
-                }
+                };
+                showAppConfirmation(`Tem certeza que deseja excluir o produto "${nome}"?`, onConfirm);
             }
 
             let orcamento = [];
@@ -1537,7 +1604,7 @@
 
             document.getElementById('share-whatsapp').addEventListener('click', () => {
                 if (orcamento.length === 0) {
-                    alert('Adicione pelo menos um item ao orçamento para compartilhar.');
+                    showAppNotification('Adicione pelo menos um item ao orçamento para compartilhar.');
                     return;
                 }
                 let cliente = document.getElementById('nomeCliente').value || 'Cliente';
@@ -1555,7 +1622,7 @@
 
             btnRegistrarVenda.addEventListener('click', () => {
                 if (orcamento.length === 0) {
-                    alert('Adicione pelo menos um item para registrar a venda.');
+                    showAppNotification('Adicione pelo menos um item para registrar a venda.');
                     return;
                 }
 
@@ -1580,14 +1647,14 @@
                 });
 
                 batch.commit().then(() => {
-                    alert('Venda registrada com sucesso!');
+                    showAppNotification('Venda registrada com sucesso!', 'Sucesso');
                     orcamento = [];
                     document.getElementById('nomeCliente').value = '';
                     document.getElementById('descontoVenda').value = '';
                     atualizarTabelaOrcamento();
                 }).catch(error => {
                     console.error('Erro ao registrar a venda: ', error);
-                    alert('Ocorreu um erro ao registrar a venda. Verifique o console para mais detalhes.');
+                    showAppNotification('Ocorreu um erro ao registrar a venda. Verifique o console para mais detalhes.');
                 });
             });
 
