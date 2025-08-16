@@ -837,21 +837,21 @@
                         <span class="material-icons-sharp">bar_chart</span>
                         <div class="middle">
                             <div>
-                                <h3>Investimento no Mês</h3>
+                                <h3>Investimento (Custo Total)</h3>
                                 <h1 id="investimento-mes">R$ 0,00</h1>
                             </div>
                         </div>
-                        <small class="text-muted">Custo de novos produtos</small>
+                        <small class="text-muted">Soma do custo do estoque</small>
                     </div>
                     <div class="income">
                         <span class="material-icons-sharp">stacked_line_chart</span>
                         <div class="middle">
                             <div>
-                                <h3>Lucro do Mês</h3>
+                                <h3>Lucro Potencial</h3>
                                 <h1 id="lucro-mes">R$ 0,00</h1>
                             </div>
                         </div>
-                        <small class="text-muted">Soma do lucro das vendas</small>
+                        <small class="text-muted">Total de venda - Custo total</small>
                     </div>
                 </div>
 
@@ -1789,23 +1789,38 @@
                 const lucroEl = document.getElementById('lucro-mes');
                 const topSellersBody = document.getElementById('produtos-mais-saida-body');
 
+                // --- CALCULA INVESTIMENTO TOTAL E LUCRO POTENCIAL DO ESTOQUE ATUAL ---
+                getUserCollection('produtos').onSnapshot(snapshot => {
+                    let investimentoTotal = 0;
+                    let lucroPotencialTotal = 0;
+                    snapshot.forEach(doc => {
+                        const p = doc.data();
+                        investimentoTotal += (p.custo || 0) * (p.quantidade || 0);
+                        lucroPotencialTotal += (p.valorVenda - p.custo) * (p.quantidade || 0);
+                    });
+                    investimentoEl.textContent = `R$ ${investimentoTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    lucroEl.textContent = `R$ ${lucroPotencialTotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                }, error => {
+                     console.error("Erro ao buscar produtos para o dashboard:", error);
+                     investimentoEl.textContent = 'Erro';
+                     lucroEl.textContent = 'Erro';
+                });
+
+                // --- CALCULA FATURAMENTO E ITENS MAIS VENDIDOS DO MÊS ATUAL ---
                 const hoje = new Date();
                 const primeiroDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
                 const ultimoDiaDoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59);
 
-                // Listener for Sales (Faturamento and Lucro)
                 getUserCollection('vendas')
                     .where('data', '>=', primeiroDiaDoMes)
                     .where('data', '<=', ultimoDiaDoMes)
                     .onSnapshot(snapshot => {
                         let faturamentoMensal = 0;
-                        let lucroMensal = 0;
                         const topSellers = {};
 
                         snapshot.forEach(doc => {
                             const v = doc.data();
                             faturamentoMensal += v.total || 0;
-                            lucroMensal += v.lucro || 0;
 
                             if (v.itens) {
                                 v.itens.forEach(item => {
@@ -1815,7 +1830,6 @@
                         });
 
                         faturamentoEl.textContent = `R$ ${faturamentoMensal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                        lucroEl.textContent = `R$ ${lucroMensal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
 
                         const sortedTopSellers = Object.entries(topSellers).sort((a, b) => b[1] - a[1]);
                         
@@ -1830,22 +1844,6 @@
                             });
                         }
                         renderProductPieChart(sortedTopSellers);
-                    });
-
-                // Listener for Products (Investimento)
-                getUserCollection('produtos')
-                    .where('createdAt', '>=', primeiroDiaDoMes)
-                    .where('createdAt', '<=', ultimoDiaDoMes)
-                    .onSnapshot(snapshot => {
-                        let investimentoMensal = 0;
-                        snapshot.forEach(doc => {
-                            const p = doc.data();
-                            investimentoMensal += (p.custo || 0) * (p.quantidade || 0);
-                        });
-                        investimentoEl.textContent = `R$ ${investimentoMensal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
-                    }, error => {
-                        console.error("Erro ao buscar produtos para o dashboard (investimento).", error);
-                        investimentoEl.textContent = 'Erro';
                     });
             }
             
