@@ -70,8 +70,8 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* --- AUTHENTICATION STYLES --- */
-        #auth-container {
+        /* --- ACTIVATION & AUTH STYLES --- */
+        #auth-container, #activation-container {
             display: flex;
             align-items: center;
             justify-content: center;
@@ -79,10 +79,14 @@
             height: 100vh;
             padding: 1rem;
         }
+        
+        #activation-container {
+            display: none; /* Hidden by default */
+        }
 
         .auth-form-wrapper {
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
             background: var(--color-white);
             padding: var(--card-padding);
             border-radius: var(--card-border-radius);
@@ -155,7 +159,7 @@
             margin-top: 1rem;
         }
         
-        .auth-toggle-link {
+        .auth-toggle-link, .support-link {
             display: block;
             text-align: center;
             margin-top: 1.5rem;
@@ -163,7 +167,7 @@
             cursor: pointer;
         }
         
-        #auth-message {
+        #auth-message, #activation-message {
             text-align: center;
             padding: 10px;
             border-radius: var(--border-radius-1);
@@ -172,12 +176,12 @@
             font-weight: 500;
         }
         
-        #auth-message.success {
+        #auth-message.success, #activation-message.success {
             background-color: var(--color-success);
             color: #fff;
         }
         
-        #auth-message.error {
+        #auth-message.error, #activation-message.error {
             background-color: var(--color-danger);
             color: #fff;
         }
@@ -798,6 +802,24 @@
             </form>
         </div>
     </div>
+    
+    <!-- Activation Container -->
+    <div id="activation-container">
+        <div class="auth-form-wrapper">
+            <form id="activation-form">
+                <h1>Ativação Necessária</h1>
+                <p id="activation-prompt-message">Sua conta não está ativa. Por favor, insira o código de ativação que você recebeu.</p>
+                <div id="activation-message"></div>
+                <div class="input-group">
+                    <input type="text" id="activation-code" placeholder="Cole seu código de ativação aqui" required>
+                </div>
+                <button type="submit" class="btn-success">Ativar</button>
+                <a class="support-link" href="https://wa.me/5579999462052?text=Olá,%20eu%20quero%20ativar%20o%20meu%20login%20no%20Stolinx" target="_blank">Não tem um código? Suporte via WhatsApp</a>
+                 <a class="auth-toggle-link" id="activation-logout">Sair</a>
+            </form>
+        </div>
+    </div>
+
 
     <!-- Main App Container -->
     <div class="container">
@@ -1163,16 +1185,25 @@
         // --- AUTHENTICATION LOGIC ---
         
         const authContainer = document.getElementById('auth-container');
+        const activationContainer = document.getElementById('activation-container');
         const mainContainer = document.querySelector('.container');
         const loginForm = document.getElementById('login-form');
         const registerForm = document.getElementById('register-form');
         const authMessage = document.getElementById('auth-message');
+        const activationForm = document.getElementById('activation-form');
+        const activationMessage = document.getElementById('activation-message');
 
         // Function to show authentication messages
         function showAuthMessage(message, type = 'error') {
             authMessage.textContent = message;
             authMessage.className = type; // 'error' or 'success'
             authMessage.style.display = 'block';
+        }
+
+        function showActivationMessage(message, type = 'error') {
+            activationMessage.textContent = message;
+            activationMessage.className = type; // 'error' or 'success'
+            activationMessage.style.display = 'block';
         }
         
         // Toggle between Login and Register forms
@@ -1201,12 +1232,11 @@
 
             auth.signInWithEmailAndPassword(email, password)
                 .then(userCredential => {
-                    showAuthMessage('Login bem-sucedido!', 'success');
                     // onAuthStateChanged will handle the UI switch
                 })
                 .catch(error => {
                     let message = 'Ocorreu um erro. Tente novamente.';
-                    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
                         message = 'E-mail ou senha incorretos.';
                     }
                     showAuthMessage(message);
@@ -1226,7 +1256,20 @@
 
             auth.createUserWithEmailAndPassword(email, password)
                 .then(userCredential => {
-                    showAuthMessage('Conta criada com sucesso! Você será redirecionado.', 'success');
+                    // Create a user profile document to store activation status
+                    return db.collection('users').doc(userCredential.user.uid).set({
+                        email: userCredential.user.email,
+                        active: false,
+                        expiresAt: null
+                    });
+                })
+                .then(() => {
+                    showAuthMessage('Conta criada! Faça login para ativar.', 'success');
+                     setTimeout(() => {
+                        registerForm.style.display = 'none';
+                        loginForm.style.display = 'block';
+                        authMessage.style.display = 'none';
+                     }, 2000);
                 })
                 .catch(error => {
                     let message = 'Ocorreu um erro ao criar a conta.';
@@ -1244,7 +1287,19 @@
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider)
                 .then(result => {
-                    showAuthMessage('Login com Google bem-sucedido!', 'success');
+                    const user = result.user;
+                    const userRef = db.collection('users').doc(user.uid);
+
+                    return userRef.get().then(doc => {
+                        if (!doc.exists) {
+                            // If user document doesn't exist, create it
+                            return userRef.set({
+                                email: user.email,
+                                active: false,
+                                expiresAt: null
+                            });
+                        }
+                    });
                 })
                 .catch(error => {
                     showAuthMessage('Erro ao fazer login com Google.');
@@ -1253,24 +1308,97 @@
         });
 
         // Handle Logout
-        document.getElementById('logout-btn').addEventListener('click', (e) => {
-            e.preventDefault();
-            
+        const handleLogout = (e) => {
+            if(e) e.preventDefault();
             // Unsubscribe from all Firestore listeners
             firestoreUnsubscribes.forEach(unsubscribe => unsubscribe());
             firestoreUnsubscribes = []; // Clear the array
-
             auth.signOut();
+        };
+
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('activation-logout').addEventListener('click', handleLogout);
+
+
+        // Handle Activation
+        activationForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const code = document.getElementById('activation-code').value.trim();
+            if (!code) {
+                showActivationMessage('Por favor, insira um código.');
+                return;
+            }
+
+            const activationCodeRef = db.collection('activationCodes').doc(code);
+
+            activationCodeRef.get().then(doc => {
+                if (doc.exists) {
+                    const codeData = doc.data();
+                    if (codeData.usedBy) {
+                        showActivationMessage('Este código já foi utilizado.');
+                    } else {
+                        // Mark code as used and update user's activation status
+                        const userRef = db.collection('users').doc(currentUserId);
+                        const expirationDate = new Date();
+                        expirationDate.setDate(expirationDate.getDate() + codeData.durationDays);
+
+                        const batch = db.batch();
+                        batch.update(activationCodeRef, { usedBy: currentUserId, usedAt: firebase.firestore.FieldValue.serverTimestamp() });
+                        batch.update(userRef, { active: true, expiresAt: expirationDate });
+
+                        return batch.commit().then(() => {
+                            showActivationMessage('Conta ativada com sucesso! Redirecionando...', 'success');
+                            setTimeout(() => location.reload(), 1500);
+                        });
+                    }
+                } else {
+                    showActivationMessage('Código de ativação inválido.');
+                }
+            }).catch(error => {
+                console.error("Error activating account:", error);
+                showActivationMessage('Ocorreu um erro ao ativar a conta.');
+            });
         });
 
         // --- AUTH STATE OBSERVER ---
         
         auth.onAuthStateChanged(user => {
             if (user) {
-                // User is signed in
                 currentUserId = user.uid;
-                authContainer.style.display = 'none';
-                mainContainer.classList.add('visible');
+                const userRef = db.collection('users').doc(user.uid);
+
+                userRef.get().then(doc => {
+                    if (doc.exists) {
+                        const userData = doc.data();
+                        const now = new Date();
+                        
+                        if (userData.active && userData.expiresAt.toDate() > now) {
+                            // User is active and subscription is valid
+                            authContainer.style.display = 'none';
+                            activationContainer.style.display = 'none';
+                            mainContainer.classList.add('visible');
+                            initializeAppLogic();
+                        } else {
+                            // User is not active or subscription expired
+                            authContainer.style.display = 'none';
+                            mainContainer.classList.remove('visible');
+                            activationContainer.style.display = 'flex';
+                            document.getElementById('activation-prompt-message').textContent = `Sua conta (${user.email}) não está ativa. Por favor, insira o código de ativação que você recebeu.`;
+                        }
+                    } else {
+                        // This case might happen for Google sign-in on first login
+                        // Let's create the user doc just in case
+                         userRef.set({
+                            email: user.email,
+                            active: false,
+                            expiresAt: null
+                        }).then(() => {
+                            authContainer.style.display = 'none';
+                            mainContainer.classList.remove('visible');
+                            activationContainer.style.display = 'flex';
+                        });
+                    }
+                });
 
                 const welcomeMessageEl = document.getElementById('welcome-message');
                 if (welcomeMessageEl) {
@@ -1284,22 +1412,25 @@
                     welcomeMessageEl.textContent = `Olá, ${userName}`;
                 }
 
-                initializeAppLogic(); // Start the main application logic
             } else {
                 // User is signed out
                 currentUserId = null;
                 mainContainer.classList.remove('visible');
+                activationContainer.style.display = 'none';
                 authContainer.style.display = 'flex';
-                // Optional: Clear any sensitive data from the UI
-                document.getElementById('tabela-estoque-body').innerHTML = '';
-                document.getElementById('historico-vendas-body').innerHTML = '';
+                // Unsubscribe from all Firestore listeners
+                firestoreUnsubscribes.forEach(unsubscribe => unsubscribe());
+                firestoreUnsubscribes = [];
             }
         });
         
         // --- MAIN APPLICATION LOGIC ---
         
-        // This function will only be called after a user logs in
         function initializeAppLogic() {
+            // Clear any previous listeners to avoid duplicates
+            firestoreUnsubscribes.forEach(unsubscribe => unsubscribe());
+            firestoreUnsubscribes = [];
+
             // --- MODAL AND NOTIFICATION SETUP ---
             const notificationModal = document.getElementById('app-notification-modal');
             const notificationTitle = document.getElementById('app-notification-title');
