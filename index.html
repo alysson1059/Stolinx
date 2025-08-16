@@ -33,7 +33,6 @@
             --box-shadow: 0 2rem 3rem var(--color-light);
         }
 
-        /* [NOVO] Estilos para o Tema Escuro */
         .dark-theme {
             --color-background: #181a1e;
             --color-white: #202528;
@@ -186,7 +185,6 @@
             margin-left: 1rem;
         }
         
-        /* [NOVO] Estilo para o botão de tema não herdar o fundo azul */
         #theme-toggler-link.active {
             background: none;
         }
@@ -195,7 +193,6 @@
             margin-top: 1.4rem;
         }
 
-        /* [NOVO] Barra superior para mobile */
         .top-bar {
             display: flex;
             align-items: center;
@@ -210,7 +207,7 @@
         }
         
         #menu-btn {
-            display: none; /* Escondido por padrão */
+            display: none;
             background: none;
             color: var(--color-dark);
             font-size: 1.8rem;
@@ -218,7 +215,7 @@
         }
 
         #mobile-page-title {
-            display: none; /* Escondido por padrão */
+            display: none;
         }
         
         .main-content {
@@ -317,7 +314,7 @@
             border: none;
         }
         
-        /* [NOVO] Wrapper para tabelas com rolagem horizontal */
+        /* [ALTERADO] Wrapper para tabelas com rolagem horizontal */
         .table-wrapper {
             overflow-x: auto;
         }
@@ -462,7 +459,7 @@
             transition: border-color 0.3s ease, color 0.3s ease;
         }
 
-        /* ========== [NOVO] MEDIA QUERIES PARA RESPONSIVIDADE ========== */
+        /* ========== MEDIA QUERIES PARA RESPONSIVIDADE ========== */
         @media screen and (max-width: 1200px) {
             .container {
                 width: 94%;
@@ -557,9 +554,10 @@
             }
 
             .main-content > h1 {
-                display: none; /* Esconde o H1 principal no mobile */
+                display: none;
             }
             
+            /* [ALTERADO] Formulários com 1 coluna no mobile */
             .form-container {
                 grid-template-columns: 1fr;
             }
@@ -603,7 +601,7 @@
         </aside>
 
         <main>
-            <div class="top-bar">
+             <div class="top-bar">
                 <div class="top-bar-left">
                     <button id="menu-btn">
                         <span class="material-icons-sharp">menu</span>
@@ -882,7 +880,7 @@
         
         document.addEventListener('DOMContentLoaded', () => {
             
-            // --- [NOVO] LÓGICA DO MENU MOBILE E TEMA ---
+            // --- LÓGICA DO MENU MOBILE E TEMA ---
             const menuBtn = document.getElementById('menu-btn');
             const closeBtn = document.getElementById('close-btn');
             const aside = document.querySelector('aside');
@@ -927,7 +925,6 @@
                     link.classList.add('active');
                     document.getElementById(targetId).classList.add('active');
                     
-                    // Atualiza o título no mobile e fecha o menu
                     mobilePageTitle.textContent = link.querySelector('h3').textContent;
                     aside.classList.remove('show-sidebar');
                 });
