@@ -83,7 +83,10 @@
 
         const loginContainer = document.getElementById('login-container');
         const appContainer = document.querySelector('.app-container');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
 
+        // --- CONTROLE DE AUTENTICAÇÃO ---
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUserId = user.uid;
@@ -96,9 +99,6 @@
                 appContainer.style.display = 'none';
             }
         });
-
-        const emailInput = document.getElementById('email');
-        const passwordInput = document.getElementById('password');
 
         document.getElementById('signup-btn').addEventListener('click', () => {
             const email = emailInput.value;
@@ -124,7 +124,11 @@
             auth.signOut();
         });
         
+        // --- FUNÇÕES PRINCIPAIS DO APP (SÓ RODAM APÓS LOGIN) ---
+        let appInitialized = false;
         function initializeAppFunctions() {
+            if (appInitialized) return; // Garante que a inicialização só ocorra uma vez
+
             const menuBtn = document.getElementById('menu-btn');
             const closeBtn = document.getElementById('close-btn');
             const aside = document.querySelector('aside');
@@ -242,7 +246,7 @@
                         const produto = doc.data();
                         const lucroUnidade = produto.lucroUnidade || 0;
                         const tr = document.createElement('tr');
-                        tr.innerHTML = `<td>${produto.codigo}</td><td>${produto.nome}</td><td class="${produto.quantidade < 3 ? 'low-stock-warning' : ''}">${produto.quantidade}</td><td>R$ ${produto.custo.toLocaleString('pt-BR', {mfd: 2})}</td><td>R$ ${produto.valorVenda.toLocaleString('pt-BR', {mfd: 2})}</td><td>R$ ${lucroUnidade.toLocaleString('pt-BR', {mfd: 2})}</td><td class="action-buttons"><button class="btn-warning"><span class="material-icons-sharp">edit</span></button><button class="btn-danger" onclick="window.excluirProduto('${doc.id}')"><span class="material-icons-sharp">delete</span></button></td>`;
+                        tr.innerHTML = `<td>${produto.codigo}</td><td>${produto.nome}</td><td class="${produto.quantidade < 3 ? 'low-stock-warning' : ''}">${produto.quantidade}</td><td>R$ ${produto.custo.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td><td>R$ ${produto.valorVenda.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td><td>R$ ${lucroUnidade.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td><td class="action-buttons"><button class="btn-warning"><span class="material-icons-sharp">edit</span></button><button class="btn-danger" onclick="window.excluirProduto('${doc.id}')"><span class="material-icons-sharp">delete</span></button></td>`;
                         tabelaCorpo.appendChild(tr);
                         if (produto.quantidade > 0) {
                             const option = document.createElement('option');
@@ -272,13 +276,13 @@
                 orcamento.forEach((item, index) => {
                     const itemSubtotal = item.qtd * item.preco; subtotal += itemSubtotal;
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${item.nome}</td><td>${item.qtd}</td><td>R$ ${item.preco.toLocaleString('pt-BR', {mfd: 2})}</td><td>R$ ${itemSubtotal.toLocaleString('pt-BR', {mfd: 2})}</td><td class="action-buttons"><button class="btn-danger" onclick="window.removerItemOrcamento(${index})"><span class="material-icons-sharp">close</span></button></td>`;
+                    tr.innerHTML = `<td>${item.nome}</td><td>${item.qtd}</td><td>R$ ${item.preco.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td><td>R$ ${itemSubtotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td><td class="action-buttons"><button class="btn-danger" onclick="window.removerItemOrcamento(${index})"><span class="material-icons-sharp">close</span></button></td>`;
                     orcamentoBody.appendChild(tr);
                 });
                 const desconto = parseFloat(document.getElementById('descontoVenda').value.replace(/\./g, '').replace(',', '.')) || 0;
                 const total = subtotal - desconto;
-                document.getElementById('subtotal-venda').textContent = `R$ ${subtotal.toLocaleString('pt-BR', {mfd: 2})}`;
-                document.getElementById('total-venda').textContent = `R$ ${total.toLocaleString('pt-BR', {mfd: 2})}`;
+                document.getElementById('subtotal-venda').textContent = `R$ ${subtotal.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                document.getElementById('total-venda').textContent = `R$ ${total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
             }
 
             window.removerItemOrcamento = (index) => { orcamento.splice(index, 1); atualizarTabelaOrcamento(); }
@@ -287,7 +291,7 @@
                 if (orcamento.length === 0) return alert('Adicione itens ao orçamento.');
                 let cliente = document.getElementById('nomeCliente').value || 'Cliente', total = document.getElementById('total-venda').innerText;
                 let texto = `*Orçamento para ${cliente}*\n\n`;
-                orcamento.forEach(item => { texto += `- ${item.qtd}x ${item.nome}: R$ ${(item.qtd * item.preco).toLocaleString('pt-BR', {mfd: 2})}\n`; });
+                orcamento.forEach(item => { texto += `- ${item.qtd}x ${item.nome}: R$ ${(item.qtd * item.preco).toLocaleString('pt-BR', {minimumFractionDigits: 2})}\n`; });
                 texto += `\n*Total: ${total}*`;
                 window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
             });
@@ -333,7 +337,7 @@
                     const tr = document.createElement('tr');
                     const dataF = venda.data ? venda.data.toDate().toLocaleDateString('pt-BR') : '';
                     const itensF = venda.itens.map(i => `${i.qtd}x ${i.nome}`).join(', ');
-                    tr.innerHTML = `<td>${venda.cliente}</td><td>${dataF}</td><td>${itensF}</td><td>R$ ${venda.total.toLocaleString('pt-BR', {mfd: 2})}</td>`;
+                    tr.innerHTML = `<td>${venda.cliente}</td><td>${dataF}</td><td>${itensF}</td><td>R$ ${venda.total.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
                     tabelaCorpo.appendChild(tr);
                 });
             }
@@ -349,8 +353,8 @@
                 db.collection('produtos').where("userId", "==", currentUserId).onSnapshot(s => {
                     let inv = 0, lucro = 0;
                     s.forEach(doc => { const p = doc.data(); inv += p.custo * p.quantidade; lucro += (p.valorVenda - p.custo) * p.quantidade; });
-                    document.getElementById('investimento-mes').textContent = `R$ ${inv.toLocaleString('pt-BR', {mfd: 2})}`;
-                    document.getElementById('lucro-mes').textContent = `R$ ${lucro.toLocaleString('pt-BR', {mfd: 2})}`;
+                    document.getElementById('investimento-mes').textContent = `R$ ${inv.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+                    document.getElementById('lucro-mes').textContent = `R$ ${lucro.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                 });
 
                 db.collection('vendas').where("userId", "==", currentUserId).onSnapshot(s => {
@@ -365,7 +369,7 @@
                             }
                         }
                     });
-                    document.getElementById('faturamento-mes').textContent = `R$ ${fat.toLocaleString('pt-BR', {mfd: 2})}`;
+                    document.getElementById('faturamento-mes').textContent = `R$ ${fat.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
                     const sortedTop = Object.entries(top).sort((a, b) => b[1] - a[1]);
                     const topBody = document.getElementById('produtos-mais-saida-body');
                     topBody.innerHTML = '';
@@ -384,10 +388,9 @@
                 });
             }
             
-            // --- INICIALIZAÇÃO ---
             setCurrentDate();
-            initializeAppFunctions();
-        });
+            appInitialized = true; // Marca que o app foi inicializado
+        }
     </script>
 </body>
 </html>
